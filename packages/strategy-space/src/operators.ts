@@ -22,8 +22,8 @@ export interface Operator {
   readonly parent?: string;
   /** The reference of a `literature` operator, for example the authors, the year and the title. */
   readonly cite?: string;
-  /** The path of the test file of the operator, from the root of its repository. */
-  readonly test: string;
+  /** The path of the test file or the test folder of the operator, from the root of its repository, or a list of these paths. */
+  readonly test: string | readonly string[];
   /** The text that tells the mechanism of the operator. */
   readonly summary: string;
 }
@@ -68,7 +68,8 @@ export function checkOperators(space: StrategySpace, set: OperatorSet): ClaimBre
     if (!(OPERATOR_SOURCES as readonly string[]).includes(o.source)) add("source", `the operator ${key} has the source ${JSON.stringify(o.source)}, not one of ${OPERATOR_SOURCES.join(", ")}`, [key]);
     if (o.source === "mutation" && o.parent === undefined) add("parent", `the mutation ${key} has no parent`, [key]);
     if (o.source === "literature" && !isText(o.cite)) add("cite", `the literature operator ${key} has no cite`, [key]);
-    if (!isText(o.test)) add("test", `the operator ${key} has no test file`, [key]);
+    const tests: readonly unknown[] = Array.isArray(o.test) ? o.test : [o.test];
+    if (tests.length === 0 || !tests.every(isText)) add("test", `the operator ${key} has no test file or test folder`, [key]);
     if (!isText(o.summary)) add("summary", `the operator ${key} has no summary`, [key]);
   }
   for (const o of seen.values()) {

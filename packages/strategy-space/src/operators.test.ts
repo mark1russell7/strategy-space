@@ -47,6 +47,11 @@ describe("checkOperators", () => {
     expect(checkOperators(space, { ...set, operators: operators.slice(1) })[0]!.inputs).toEqual(["order.area"]);
     expect(claims(change(0, { cite: "" }))).toEqual(["cite"]);
     expect(claims(change(1, { test: " " }))).toEqual(["test"]);
+    expect(claims(change(1, { test: [] }))).toEqual(["test"]);
+    expect(claims(change(1, { test: ["src/order/", ""] }))).toEqual(["test"]);
+    // A folder of tests, or a list of files and folders.
+    expect(claims(change(1, { test: "src/order/" }))).toEqual([]);
+    expect(claims(change(1, { test: ["src/order/", "src/order.test.ts"] }))).toEqual([]);
     expect(claims(change(1, { summary: "" }))).toEqual(["summary"]);
   });
 

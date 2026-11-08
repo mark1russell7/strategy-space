@@ -34,7 +34,7 @@ configId(space, configs[0]!); // the first 16 hex characters of a SHA-256
 | The sweeps of the options | `sweepValues`, `sweepOf`, `sweepGrid` |
 | The distinctness gate | `distinctness`, `distinctCount` |
 | The operators of a space | `checkOperators`, `countOperators` |
-| The combinators and the count to a depth | `COMBINATORS`, `checkTerm`, `termDepth`, `countSpace` |
+| The combinators and the count to a depth | `COMBINATORS`, `checkTerm`, `termDepth`, `canonicalTerm`, `countSpace` |
 
 [`docs/STRATEGY-SPACE.md`](../../docs/STRATEGY-SPACE.md) tells the schema `strategy-space/1` and the rules of each function. [`docs/DISTINCT.md`](../../docs/DISTINCT.md) tells the gate, and [`docs/OPERATORS.md`](../../docs/OPERATORS.md) tells the operators and the combinators.
 

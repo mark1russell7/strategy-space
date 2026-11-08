@@ -7,6 +7,7 @@
 ## . (build/index.d.ts): names
 
 AnyOption: build/strategy-options.d.ts#AnyOption
+BUDGET_KEYS: build/terms.d.ts#BUDGET_KEYS
 BooleanOption: build/strategy-options.d.ts#BooleanOption
 COMBINATORS: build/terms.d.ts#COMBINATORS
 type ClaimBreak: build/claim.d.ts#ClaimBreak
@@ -59,6 +60,7 @@ SweepOptions: build/strategy-options.d.ts#SweepOptions
 TermCount: build/terms.d.ts#TermCount
 ValueOption: build/strategy-options.d.ts#ValueOption
 canonicalConfig: build/strategy-space.d.ts#canonicalConfig
+canonicalTerm: build/terms.d.ts#canonicalTerm
 checkCombinators: build/terms.d.ts#checkCombinators
 checkConfig: build/strategy-space.d.ts#checkConfig
 checkOperators: build/operators.d.ts#checkOperators
@@ -147,7 +149,7 @@ export interface Operator {
   readonly source: OperatorSource;
   readonly parent?: string;
   readonly cite?: string;
-  readonly test: string;
+  readonly test: string | readonly string[];
   readonly summary: string;
 }
 
@@ -481,6 +483,9 @@ export declare function spaceSize(space: StrategySpace, options: SpaceSizeOption
 ### build/strategy-space.d.ts#splitConfig
 export declare function splitConfig(config: StrategyConfig, engine: string): StrategyConfig;
 
+### build/terms.d.ts#BUDGET_KEYS
+export declare const BUDGET_KEYS: readonly string[];
+
 ### build/terms.d.ts#COMBINATORS
 export declare const COMBINATORS: readonly Combinator[];
 
@@ -491,6 +496,7 @@ export interface Combinator {
   readonly max: number;
   readonly ordered: boolean;
   readonly distinct: boolean;
+  readonly spec?: "object" | "limits";
   readonly summary: string;
 }
 
@@ -499,6 +505,7 @@ export interface CountOptions extends ShapeFilter {
   readonly depth: number;
   readonly levels: number;
   readonly combinators?: readonly Combinator[];
+  readonly specs?: Readonly<Record<string, bigint | readonly bigint[]>>;
 }
 
 ### build/terms.d.ts#StrategyTerm
@@ -507,6 +514,7 @@ export type StrategyTerm = {
 } | {
   readonly combinator: string;
   readonly args: readonly StrategyTerm[];
+  readonly spec?: Readonly<Record<string, unknown>>;
 };
 
 ### build/terms.d.ts#TermCount
@@ -515,6 +523,9 @@ export interface TermCount {
   readonly upTo: readonly bigint[];
   readonly total: bigint;
 }
+
+### build/terms.d.ts#canonicalTerm
+export declare function canonicalTerm(term: StrategyTerm, combinators?: readonly Combinator[]): StrategyTerm;
 
 ### build/terms.d.ts#checkCombinators
 export declare function checkCombinators(combinators: readonly Combinator[]): ClaimBreak[];
