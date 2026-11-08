@@ -35,8 +35,9 @@ configId(space, configs[0]!); // the first 16 hex characters of a SHA-256
 | The distinctness gate | `distinctness`, `distinctCount` |
 | The operators of a space | `checkOperators`, `countOperators` |
 | The combinators and the count to a depth | `COMBINATORS`, `checkTerm`, `termDepth`, `canonicalTerm`, `countSpace` |
+| The race and the screen of the terms | `race` |
 
-[`docs/STRATEGY-SPACE.md`](../../docs/STRATEGY-SPACE.md) tells the schema `strategy-space/1` and the rules of each function. [`docs/DISTINCT.md`](../../docs/DISTINCT.md) tells the gate, and [`docs/OPERATORS.md`](../../docs/OPERATORS.md) tells the operators and the combinators.
+[`docs/STRATEGY-SPACE.md`](../../docs/STRATEGY-SPACE.md) tells the schema `strategy-space/1` and the rules of each function. [`docs/DISTINCT.md`](../../docs/DISTINCT.md) tells the gate, [`docs/OPERATORS.md`](../../docs/OPERATORS.md) tells the operators and the combinators, and [`docs/RACE.md`](../../docs/RACE.md) tells the race.
 
 ## Shape kinds
 

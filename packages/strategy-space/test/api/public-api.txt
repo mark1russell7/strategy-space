@@ -43,6 +43,9 @@ OutputHashes: build/distinct.d.ts#OutputHashes
 ParamKind: build/strategy-space.d.ts#ParamKind
 ParamValue: build/strategy-space.d.ts#ParamValue
 ParamWhen: build/strategy-space.d.ts#ParamWhen
+RaceDrop: build/race.d.ts#RaceDrop
+RaceOptions: build/race.d.ts#RaceOptions
+RaceResult: build/race.d.ts#RaceResult
 STRATEGY_SPACE_SCHEMA: build/strategy-space.d.ts#STRATEGY_SPACE_SCHEMA
 SampleOptions: build/strategy-space.d.ts#SampleOptions
 ShapeFilter: build/strategy-space.d.ts#ShapeFilter
@@ -87,6 +90,7 @@ paramLevels: build/strategy-space.d.ts#paramLevels
 paramProblem: build/strategy-space.d.ts#paramProblem
 paramValue: build/strategy-space.d.ts#paramValue
 productSpace: build/strategy-space.d.ts#productSpace
+race: build/race.d.ts#race
 spaceShapeKinds: build/strategy-space.d.ts#spaceShapeKinds
 spaceSize: build/strategy-space.d.ts#spaceSize
 splitConfig: build/strategy-space.d.ts#splitConfig
@@ -180,6 +184,41 @@ export declare function countOperators(set: OperatorSet): OperatorCount;
 
 ### build/operators.d.ts#needsOperator
 export declare function needsOperator(option: StageOption): boolean;
+
+### build/race.d.ts#RaceDrop
+export interface RaceDrop {
+  readonly id: string;
+  readonly inputs: number;
+  readonly best: string;
+  readonly gap: number;
+  readonly p: number;
+  readonly adjusted: number;
+}
+
+### build/race.d.ts#RaceOptions
+export interface RaceOptions {
+  readonly inputs: number;
+  readonly first?: number;
+  readonly level?: number;
+  readonly keep?: number;
+  readonly seed?: number;
+  readonly exactMax?: number;
+  readonly runs?: number;
+}
+
+### build/race.d.ts#RaceResult
+export interface RaceResult {
+  readonly best: string;
+  readonly live: readonly string[];
+  readonly means: Readonly<Record<string, number>>;
+  readonly drops: readonly RaceDrop[];
+  readonly inputs: number;
+  readonly measured: number;
+  readonly full: number;
+}
+
+### build/race.d.ts#race
+export declare function race(ids: readonly string[], cost: (id: string, input: number) => number, options: RaceOptions): RaceResult;
 
 ### build/strategy-options.d.ts#AnyOption
 export type AnyOption<S extends string = string> = NumberOption | BooleanOption | EnumOption | ValueOption<unknown, S>;
