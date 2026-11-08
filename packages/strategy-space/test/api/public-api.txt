@@ -8,7 +8,10 @@
 
 AnyOption: build/strategy-options.d.ts#AnyOption
 BooleanOption: build/strategy-options.d.ts#BooleanOption
+COMBINATORS: build/terms.d.ts#COMBINATORS
 type ClaimBreak: build/claim.d.ts#ClaimBreak
+Combinator: build/terms.d.ts#Combinator
+CountOptions: build/terms.d.ts#CountOptions
 DeclaredStrategy: build/strategy-options.d.ts#DeclaredStrategy
 DistinctOptions: build/distinct.d.ts#DistinctOptions
 DistinctRow: build/distinct.d.ts#DistinctRow
@@ -22,6 +25,12 @@ MemberRule: build/strategy-space.d.ts#MemberRule
 NoDefault: build/strategy-options.d.ts#NoDefault
 NoDefaultReason: build/strategy-options.d.ts#NoDefaultReason
 NumberOption: build/strategy-options.d.ts#NumberOption
+OPERATOR_SCHEMA: build/operators.d.ts#OPERATOR_SCHEMA
+OPERATOR_SOURCES: build/operators.d.ts#OPERATOR_SOURCES
+Operator: build/operators.d.ts#Operator
+OperatorCount: build/operators.d.ts#OperatorCount
+OperatorSet: build/operators.d.ts#OperatorSet
+OperatorSource: build/operators.d.ts#OperatorSource
 OptionDeclaration: build/strategy-options.d.ts#OptionDeclaration
 OptionIssue: build/strategy-options.d.ts#OptionIssue
 OptionRef: build/strategy-space.d.ts#OptionRef
@@ -45,15 +54,22 @@ StageChoice: build/strategy-space.d.ts#StageChoice
 StageOption: build/strategy-space.d.ts#StageOption
 StrategyConfig: build/strategy-space.d.ts#StrategyConfig
 StrategySpace: build/strategy-space.d.ts#StrategySpace
+StrategyTerm: build/terms.d.ts#StrategyTerm
 SweepOptions: build/strategy-options.d.ts#SweepOptions
+TermCount: build/terms.d.ts#TermCount
 ValueOption: build/strategy-options.d.ts#ValueOption
 canonicalConfig: build/strategy-space.d.ts#canonicalConfig
+checkCombinators: build/terms.d.ts#checkCombinators
 checkConfig: build/strategy-space.d.ts#checkConfig
+checkOperators: build/operators.d.ts#checkOperators
 checkOptions: build/strategy-options.d.ts#checkOptions
 checkSchema: build/strategy-options.d.ts#checkSchema
 checkSpace: build/strategy-space.d.ts#checkSpace
+checkTerm: build/terms.d.ts#checkTerm
 clampOptions: build/strategy-options.d.ts#clampOptions
 configId: build/strategy-space.d.ts#configId
+countOperators: build/operators.d.ts#countOperators
+countSpace: build/terms.d.ts#countSpace
 declarationIssues: build/strategy-options.d.ts#declarationIssues
 distinctCount: build/distinct.d.ts#distinctCount
 distinctness: build/distinct.d.ts#distinctness
@@ -73,6 +89,7 @@ splitConfig: build/strategy-space.d.ts#splitConfig
 sweepGrid: build/strategy-options.d.ts#sweepGrid
 sweepOf: build/strategy-options.d.ts#sweepOf
 sweepValues: build/strategy-options.d.ts#sweepValues
+termDepth: build/terms.d.ts#termDepth
 
 ## Declarations
 
@@ -116,6 +133,46 @@ export declare function distinctCount(rows: readonly DistinctRow[]): number;
 
 ### build/distinct.d.ts#distinctness
 export declare function distinctness(operators: readonly OutputHashes[], variants: readonly OutputHashes[], options: DistinctOptions): DistinctRow[];
+
+### build/operators.d.ts#OPERATOR_SCHEMA
+export declare const OPERATOR_SCHEMA = "strategy-operators/1";
+
+### build/operators.d.ts#OPERATOR_SOURCES
+export declare const OPERATOR_SOURCES: readonly ["literature", "ours", "mutation"];
+
+### build/operators.d.ts#Operator
+export interface Operator {
+  readonly id: string;
+  readonly stage: string;
+  readonly source: OperatorSource;
+  readonly parent?: string;
+  readonly cite?: string;
+  readonly test: string;
+  readonly summary: string;
+}
+
+### build/operators.d.ts#OperatorCount
+export interface OperatorCount {
+  readonly total: number;
+  readonly byStage: Readonly<Record<string, number>>;
+  readonly bySource: Readonly<Record<OperatorSource, number>>;
+}
+
+### build/operators.d.ts#OperatorSet
+export interface OperatorSet {
+  readonly schema: typeof OPERATOR_SCHEMA;
+  readonly engine: string;
+  readonly operators: readonly Operator[];
+}
+
+### build/operators.d.ts#OperatorSource
+export type OperatorSource = (typeof OPERATOR_SOURCES)[number];
+
+### build/operators.d.ts#checkOperators
+export declare function checkOperators(space: StrategySpace, set: OperatorSet): ClaimBreak[];
+
+### build/operators.d.ts#countOperators
+export declare function countOperators(set: OperatorSet): OperatorCount;
 
 ### build/strategy-options.d.ts#AnyOption
 export type AnyOption<S extends string = string> = NumberOption | BooleanOption | EnumOption | ValueOption<unknown, S>;
@@ -423,3 +480,50 @@ export declare function spaceSize(space: StrategySpace, options: SpaceSizeOption
 
 ### build/strategy-space.d.ts#splitConfig
 export declare function splitConfig(config: StrategyConfig, engine: string): StrategyConfig;
+
+### build/terms.d.ts#COMBINATORS
+export declare const COMBINATORS: readonly Combinator[];
+
+### build/terms.d.ts#Combinator
+export interface Combinator {
+  readonly name: string;
+  readonly min: number;
+  readonly max: number;
+  readonly ordered: boolean;
+  readonly distinct: boolean;
+  readonly summary: string;
+}
+
+### build/terms.d.ts#CountOptions
+export interface CountOptions extends ShapeFilter {
+  readonly depth: number;
+  readonly levels: number;
+  readonly combinators?: readonly Combinator[];
+}
+
+### build/terms.d.ts#StrategyTerm
+export type StrategyTerm = {
+  readonly config: StrategyConfig;
+} | {
+  readonly combinator: string;
+  readonly args: readonly StrategyTerm[];
+};
+
+### build/terms.d.ts#TermCount
+export interface TermCount {
+  readonly base: bigint;
+  readonly upTo: readonly bigint[];
+  readonly total: bigint;
+}
+
+### build/terms.d.ts#checkCombinators
+export declare function checkCombinators(combinators: readonly Combinator[]): ClaimBreak[];
+
+### build/terms.d.ts#checkTerm
+export declare function checkTerm(space: StrategySpace, term: StrategyTerm, combinators?: readonly Combinator[]): ClaimBreak[];
+
+### build/terms.d.ts#countSpace
+export declare function countSpace(space: StrategySpace, options: CountOptions): TermCount;
+
+### build/terms.d.ts#termDepth
+export declare function termDepth(term: StrategyTerm): number;
