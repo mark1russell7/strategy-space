@@ -1,0 +1,425 @@
+# The public API of @mark1russell7/strategy-space
+#
+# The names of each entry of the exports field, and the declaration of each name, without comments
+# and private members. The command `api-report check` compares this file with the built .d.ts files.
+# To accept a change of the API, start the build, then `api-report update`, and review the diff.
+
+## . (build/index.d.ts): names
+
+AnyOption: build/strategy-options.d.ts#AnyOption
+BooleanOption: build/strategy-options.d.ts#BooleanOption
+type ClaimBreak: build/claim.d.ts#ClaimBreak
+DeclaredStrategy: build/strategy-options.d.ts#DeclaredStrategy
+DistinctOptions: build/distinct.d.ts#DistinctOptions
+DistinctRow: build/distinct.d.ts#DistinctRow
+DistinctVerdict: build/distinct.d.ts#DistinctVerdict
+EnumOption: build/strategy-options.d.ts#EnumOption
+EnumerateOptions: build/strategy-space.d.ts#EnumerateOptions
+GridOptions: build/strategy-space.d.ts#GridOptions
+KindOptions: build/strategy-space.d.ts#KindOptions
+ListItem: build/strategy-options.d.ts#ListItem
+MemberRule: build/strategy-space.d.ts#MemberRule
+NoDefault: build/strategy-options.d.ts#NoDefault
+NoDefaultReason: build/strategy-options.d.ts#NoDefaultReason
+NumberOption: build/strategy-options.d.ts#NumberOption
+OptionDeclaration: build/strategy-options.d.ts#OptionDeclaration
+OptionIssue: build/strategy-options.d.ts#OptionIssue
+OptionRef: build/strategy-space.d.ts#OptionRef
+OptionScale: build/strategy-options.d.ts#OptionScale
+OptionSchema: build/strategy-options.d.ts#OptionSchema
+OptionSetting: build/strategy-options.d.ts#OptionSetting
+OptionSupports: build/strategy-space.d.ts#OptionSupports
+OutputHashes: build/distinct.d.ts#OutputHashes
+ParamKind: build/strategy-space.d.ts#ParamKind
+ParamValue: build/strategy-space.d.ts#ParamValue
+ParamWhen: build/strategy-space.d.ts#ParamWhen
+STRATEGY_SPACE_SCHEMA: build/strategy-space.d.ts#STRATEGY_SPACE_SCHEMA
+SampleOptions: build/strategy-space.d.ts#SampleOptions
+ShapeFilter: build/strategy-space.d.ts#ShapeFilter
+SpaceConstraint: build/strategy-space.d.ts#SpaceConstraint
+SpaceParam: build/strategy-space.d.ts#SpaceParam
+SpaceSize: build/strategy-space.d.ts#SpaceSize
+SpaceSizeOptions: build/strategy-space.d.ts#SpaceSizeOptions
+SpaceStage: build/strategy-space.d.ts#SpaceStage
+StageChoice: build/strategy-space.d.ts#StageChoice
+StageOption: build/strategy-space.d.ts#StageOption
+StrategyConfig: build/strategy-space.d.ts#StrategyConfig
+StrategySpace: build/strategy-space.d.ts#StrategySpace
+SweepOptions: build/strategy-options.d.ts#SweepOptions
+ValueOption: build/strategy-options.d.ts#ValueOption
+canonicalConfig: build/strategy-space.d.ts#canonicalConfig
+checkConfig: build/strategy-space.d.ts#checkConfig
+checkOptions: build/strategy-options.d.ts#checkOptions
+checkSchema: build/strategy-options.d.ts#checkSchema
+checkSpace: build/strategy-space.d.ts#checkSpace
+clampOptions: build/strategy-options.d.ts#clampOptions
+configId: build/strategy-space.d.ts#configId
+declarationIssues: build/strategy-options.d.ts#declarationIssues
+distinctCount: build/distinct.d.ts#distinctCount
+distinctness: build/distinct.d.ts#distinctness
+enumerateSpace: build/strategy-space.d.ts#enumerateSpace
+joinConfigs: build/strategy-space.d.ts#joinConfigs
+listOptions: build/strategy-options.d.ts#listOptions
+optionDefaults: build/strategy-options.d.ts#optionDefaults
+optionIssue: build/strategy-options.d.ts#optionIssue
+paramActive: build/strategy-space.d.ts#paramActive
+paramLevels: build/strategy-space.d.ts#paramLevels
+paramProblem: build/strategy-space.d.ts#paramProblem
+paramValue: build/strategy-space.d.ts#paramValue
+productSpace: build/strategy-space.d.ts#productSpace
+spaceShapeKinds: build/strategy-space.d.ts#spaceShapeKinds
+spaceSize: build/strategy-space.d.ts#spaceSize
+splitConfig: build/strategy-space.d.ts#splitConfig
+sweepGrid: build/strategy-options.d.ts#sweepGrid
+sweepOf: build/strategy-options.d.ts#sweepOf
+sweepValues: build/strategy-options.d.ts#sweepValues
+
+## Declarations
+
+### build/claim.d.ts#ClaimBreak
+export interface ClaimBreak {
+  readonly claim: string;
+  readonly detail: string;
+  readonly inputs: readonly string[];
+}
+
+### build/distinct.d.ts#DistinctOptions
+export interface DistinctOptions {
+  readonly inputs: readonly string[];
+  readonly refused?: string;
+}
+
+### build/distinct.d.ts#DistinctRow
+export interface DistinctRow {
+  readonly id: string;
+  readonly stage: string;
+  readonly verdict: DistinctVerdict;
+  readonly canonical: string;
+  readonly sameAs: readonly string[];
+  readonly undecided: readonly string[];
+  readonly missing: readonly string[];
+  readonly differsOn: Readonly<Record<string, string>>;
+}
+
+### build/distinct.d.ts#DistinctVerdict
+export type DistinctVerdict = "distinct" | "same" | "no-read";
+
+### build/distinct.d.ts#OutputHashes
+export interface OutputHashes {
+  readonly id: string;
+  readonly stage: string;
+  readonly outputs: Readonly<Record<string, string>>;
+}
+
+### build/distinct.d.ts#distinctCount
+export declare function distinctCount(rows: readonly DistinctRow[]): number;
+
+### build/distinct.d.ts#distinctness
+export declare function distinctness(operators: readonly OutputHashes[], variants: readonly OutputHashes[], options: DistinctOptions): DistinctRow[];
+
+### build/strategy-options.d.ts#AnyOption
+export type AnyOption<S extends string = string> = NumberOption | BooleanOption | EnumOption | ValueOption<unknown, S>;
+
+### build/strategy-options.d.ts#BooleanOption
+export interface BooleanOption extends OptionBase {
+  readonly type: "boolean";
+  readonly default?: boolean;
+}
+
+### build/strategy-options.d.ts#DeclaredStrategy
+export interface DeclaredStrategy<O extends object = object, S extends string = string> {
+  readonly name: string;
+  readonly defaults: O;
+  readonly schema?: OptionSchema<O, S>;
+}
+
+### build/strategy-options.d.ts#EnumOption
+export interface EnumOption<V extends string = string> extends OptionBase {
+  readonly type: "enum";
+  readonly values: readonly V[];
+  readonly custom?: "function";
+  readonly default?: V;
+}
+
+### build/strategy-options.d.ts#ListItem
+export type ListItem<S extends string = string> = ItemOf<AnyOption<S>>;
+
+### build/strategy-options.d.ts#NoDefault
+export interface NoDefault {
+  readonly reason: NoDefaultReason;
+  readonly describe: string;
+}
+
+### build/strategy-options.d.ts#NoDefaultReason
+export type NoDefaultReason = "unset" | "required" | "derived" | "function";
+
+### build/strategy-options.d.ts#NumberOption
+export interface NumberOption extends OptionBase {
+  readonly type: "number" | "integer";
+  readonly min: number;
+  readonly max: number;
+  readonly step?: number;
+  readonly scale?: OptionScale;
+  readonly special?: readonly number[];
+  readonly marks?: readonly number[];
+  readonly values?: readonly number[];
+  readonly default?: number;
+}
+
+### build/strategy-options.d.ts#OptionDeclaration
+export type OptionDeclaration<V, S extends string = string> = [V] extends [number] ? NumberOption : [V] extends [boolean] ? BooleanOption : [V] extends [string] ? string extends V ? EnumOption<V> | ValueOption<V, S> : EnumOption<V> : [Extract<V, string>] extends [never] ? ValueOption<V, S> : EnumOption<Extract<V, string>> | ValueOption<V, S>;
+
+### build/strategy-options.d.ts#OptionIssue
+export interface OptionIssue {
+  readonly key: string;
+  readonly value: unknown;
+  readonly problem: "unknown" | "type" | "range" | "integer" | "value";
+  readonly message: string;
+}
+
+### build/strategy-options.d.ts#OptionScale
+export type OptionScale = "linear" | "log";
+
+### build/strategy-options.d.ts#OptionSchema
+export type OptionSchema<O, S extends string = string> = { readonly [K in keyof O]-?: OptionDeclaration<NonNullable<O[K]>, S>; };
+
+### build/strategy-options.d.ts#OptionSetting
+export interface OptionSetting<O extends object> {
+  readonly name: string;
+  readonly options: Partial<O>;
+}
+
+### build/strategy-options.d.ts#SweepOptions
+export interface SweepOptions {
+  readonly count?: number;
+  readonly special?: boolean;
+}
+
+### build/strategy-options.d.ts#ValueOption
+export interface ValueOption<V = unknown, S extends string = string> extends OptionBase {
+  readonly type: "function" | "strategy" | "list" | "object";
+  readonly step?: S;
+  readonly kinds?: readonly string[];
+  readonly optionsKey?: string;
+  readonly inlineOptions?: boolean;
+  readonly optIn?: boolean;
+  readonly needs?: Readonly<Record<string, string>>;
+  readonly of?: ListItem<S>;
+  readonly min?: number;
+  readonly max?: number;
+  readonly default?: V;
+}
+
+### build/strategy-options.d.ts#checkOptions
+export declare function checkOptions<O extends object>(strategy: DeclaredStrategy<O>, options: Partial<O>): OptionIssue[];
+
+### build/strategy-options.d.ts#checkSchema
+export declare function checkSchema(strategy: DeclaredStrategy): string[];
+
+### build/strategy-options.d.ts#clampOptions
+export declare function clampOptions<O extends object>(strategy: DeclaredStrategy<O>, options: Partial<O>): Partial<O>;
+
+### build/strategy-options.d.ts#declarationIssues
+export declare function declarationIssues(key: string, d: AnyOption): string[];
+
+### build/strategy-options.d.ts#listOptions
+export declare function listOptions<O extends object, S extends string = string>(strategy: DeclaredStrategy<O, S>): {
+  readonly key: keyof O & string;
+  readonly declaration: AnyOption<S>;
+  readonly value: unknown;
+}[];
+
+### build/strategy-options.d.ts#optionDefaults
+export declare function optionDefaults<O extends object, S extends string = string>(strategy: DeclaredStrategy<O, S>): Partial<O>;
+
+### build/strategy-options.d.ts#optionIssue
+export declare function optionIssue(key: string, value: unknown, d: AnyOption): OptionIssue | undefined;
+
+### build/strategy-options.d.ts#sweepGrid
+export declare function sweepGrid<O extends object>(strategy: DeclaredStrategy<O>, keys: readonly (keyof O & string)[], options?: SweepOptions): OptionSetting<O>[];
+
+### build/strategy-options.d.ts#sweepOf
+export declare function sweepOf<O extends object>(strategy: DeclaredStrategy<O>, key: keyof O & string, options?: SweepOptions): OptionSetting<O>[];
+
+### build/strategy-options.d.ts#sweepValues
+export declare function sweepValues(declaration: AnyOption, options?: SweepOptions): unknown[];
+
+### build/strategy-space.d.ts#EnumerateOptions
+export type EnumerateOptions = GridOptions | SampleOptions;
+
+### build/strategy-space.d.ts#GridOptions
+export interface GridOptions extends ShapeFilter {
+  readonly mode: "grid";
+  readonly levels: number;
+  readonly limit?: number;
+}
+
+### build/strategy-space.d.ts#KindOptions
+export interface KindOptions {
+  readonly kinds?: readonly string[];
+}
+
+### build/strategy-space.d.ts#MemberRule
+export interface MemberRule {
+  readonly min: number;
+  readonly max: number;
+  readonly ordered: boolean;
+  readonly pool?: readonly (readonly StrategyConfig[])[];
+  readonly view?: "bounds";
+}
+
+### build/strategy-space.d.ts#OptionRef
+export interface OptionRef {
+  readonly stage: string;
+  readonly option: string | null;
+}
+
+### build/strategy-space.d.ts#OptionSupports
+export interface OptionSupports {
+  readonly shape?: readonly string[];
+}
+
+### build/strategy-space.d.ts#ParamKind
+export type ParamKind = "int" | "real" | "enum" | "bool";
+
+### build/strategy-space.d.ts#ParamValue
+export type ParamValue = number | string | boolean;
+
+### build/strategy-space.d.ts#ParamWhen
+export interface ParamWhen {
+  readonly param: string;
+  readonly in: readonly ParamValue[];
+}
+
+### build/strategy-space.d.ts#STRATEGY_SPACE_SCHEMA
+export declare const STRATEGY_SPACE_SCHEMA = "strategy-space/1";
+
+### build/strategy-space.d.ts#SampleOptions
+export interface SampleOptions extends ShapeFilter {
+  readonly mode: "sample";
+  readonly n: number;
+  readonly seed: number;
+  readonly meta?: "skip" | "sample";
+  readonly maxTries?: number;
+  readonly draw?: "reject" | "walk";
+  readonly fixed?: Readonly<Record<string, string>>;
+}
+
+### build/strategy-space.d.ts#ShapeFilter
+export interface ShapeFilter extends KindOptions {
+  readonly shapes?: readonly string[];
+}
+
+### build/strategy-space.d.ts#SpaceConstraint
+export interface SpaceConstraint {
+  readonly if: OptionRef;
+  readonly then: OptionRef | {
+    readonly not: OptionRef;
+  };
+}
+
+### build/strategy-space.d.ts#SpaceParam
+export interface SpaceParam {
+  readonly name: string;
+  readonly kind: ParamKind;
+  readonly min?: number;
+  readonly max?: number;
+  readonly step?: number;
+  readonly scale?: "linear" | "log";
+  readonly values?: readonly (string | number)[];
+  readonly default: ParamValue;
+  readonly when?: ParamWhen;
+}
+
+### build/strategy-space.d.ts#SpaceSize
+export interface SpaceSize {
+  readonly base: bigint;
+  readonly meta: bigint | null;
+}
+
+### build/strategy-space.d.ts#SpaceSizeOptions
+export interface SpaceSizeOptions extends ShapeFilter {
+  readonly levels: number;
+  readonly maxMeta?: bigint;
+}
+
+### build/strategy-space.d.ts#SpaceStage
+export interface SpaceStage {
+  readonly name: string;
+  readonly options: readonly StageOption[];
+  readonly optional?: boolean;
+}
+
+### build/strategy-space.d.ts#StageChoice
+export interface StageChoice {
+  readonly option: string;
+  readonly params?: Readonly<Record<string, ParamValue>>;
+  readonly members?: readonly StrategyConfig[];
+}
+
+### build/strategy-space.d.ts#StageOption
+export interface StageOption {
+  readonly id: string;
+  readonly params: readonly SpaceParam[];
+  readonly members?: MemberRule;
+  readonly supports?: OptionSupports;
+}
+
+### build/strategy-space.d.ts#StrategyConfig
+export interface StrategyConfig {
+  readonly space: string;
+  readonly stages: Readonly<Record<string, StageChoice | null>>;
+}
+
+### build/strategy-space.d.ts#StrategySpace
+export interface StrategySpace {
+  readonly schema: typeof STRATEGY_SPACE_SCHEMA;
+  readonly engine: string;
+  readonly version: string;
+  readonly stages: readonly SpaceStage[];
+  readonly constraints?: readonly SpaceConstraint[];
+  readonly named?: Readonly<Record<string, StrategyConfig>>;
+  readonly parts?: readonly StrategySpace[];
+}
+
+### build/strategy-space.d.ts#canonicalConfig
+export declare function canonicalConfig(space: StrategySpace, config: StrategyConfig): StrategyConfig;
+
+### build/strategy-space.d.ts#checkConfig
+export declare function checkConfig(space: StrategySpace, config: StrategyConfig, options?: ShapeFilter): ClaimBreak[];
+
+### build/strategy-space.d.ts#checkSpace
+export declare function checkSpace(space: StrategySpace, kindOptions?: KindOptions): ClaimBreak[];
+
+### build/strategy-space.d.ts#configId
+export declare function configId(space: StrategySpace, config: StrategyConfig): string;
+
+### build/strategy-space.d.ts#enumerateSpace
+export declare function enumerateSpace(space: StrategySpace, options: EnumerateOptions): StrategyConfig[];
+
+### build/strategy-space.d.ts#joinConfigs
+export declare function joinConfigs(space: string, parts: readonly StrategyConfig[]): StrategyConfig;
+
+### build/strategy-space.d.ts#paramActive
+export declare function paramActive(param: SpaceParam, values: Readonly<Record<string, ParamValue>>): boolean;
+
+### build/strategy-space.d.ts#paramLevels
+export declare function paramLevels(param: SpaceParam, levels: number): ParamValue[];
+
+### build/strategy-space.d.ts#paramProblem
+export declare function paramProblem(param: SpaceParam, value: unknown): string | undefined;
+
+### build/strategy-space.d.ts#paramValue
+export declare function paramValue(param: SpaceParam, value: ParamValue): ParamValue;
+
+### build/strategy-space.d.ts#productSpace
+export declare function productSpace(a: StrategySpace, b: StrategySpace, name: string): StrategySpace;
+
+### build/strategy-space.d.ts#spaceShapeKinds
+export declare function spaceShapeKinds(space: StrategySpace, options?: KindOptions): string[];
+
+### build/strategy-space.d.ts#spaceSize
+export declare function spaceSize(space: StrategySpace, options: SpaceSizeOptions): SpaceSize;
+
+### build/strategy-space.d.ts#splitConfig
+export declare function splitConfig(config: StrategyConfig, engine: string): StrategyConfig;

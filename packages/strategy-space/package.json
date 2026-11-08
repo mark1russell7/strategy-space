@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@mark1russell7/strategy-space",
+  "version": "0.0.1",
+  "description": "Layout strategies as data: the stages, options and parameters of a space, its checks, the id of a config, the count of the space, grids and seeded samples.",
+  "keywords": [
+    "strategy-space",
+    "layout",
+    "configuration-space",
+    "enumeration",
+    "sampling",
+    "search-space",
+    "deterministic"
+  ],
+  "homepage": "https://github.com/mark1russell7/strategy-space/tree/main/packages/strategy-space#readme",
+  "bugs": {
+    "url": "https://github.com/mark1russell7/strategy-space/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mark1russell7/strategy-space.git",
+    "directory": "packages/strategy-space"
+  },
+  "license": "MIT",
+  "author": "Mark Russell (https://github.com/mark1russell7)",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "files": [
+    "build"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "main": "./build/index.js",
+    "types": "./build/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./build/index.d.ts",
+        "import": "./build/index.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
+  },
+  "dependencies": {
+    "@mark1russell7/rigor-generators": "^0.1.7"
+  },
+  "devDependencies": {
+    "@mark1russell7/cue": "^2.0.0",
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "tsdown": "^0.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
