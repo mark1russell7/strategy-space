@@ -47,12 +47,25 @@ export const COMBINATORS: readonly Combinator[] = /* @__PURE__ */ Object.freeze(
     ordered: true,
     distinct: false,
     spec: "limits",
-    summary: "It reads one measure of the input. Below the first limit, it gives the result of the first argument, and so on up the limits.",
+    summary: "It reads one measure of the input. At or below the first limit, it gives the result of the first argument, and so on up the limits.",
   },
 ]);
 
-/** The keys that a spec can not have at any depth. A time budget makes the result change with the speed of the computer. */
+/**
+ * The starts of the keys that a spec can not have at any depth, with case ignored, for example `budgetMs` or `timeoutMs`.
+ * A time budget makes the result change with the speed of the computer.
+ */
 export const BUDGET_KEYS: readonly string[] = /* @__PURE__ */ Object.freeze(["budget", "deadline", "timeout"]);
+
+/**
+ * This function gives the index of the argument of a `dispatch` term for a value of its measure. A band includes its upper limit.
+ * So the value `limits[i]` goes to the argument `i`, and a value above the last limit goes to the last argument.
+ */
+export function dispatchIndex(limits: readonly number[], value: number): number {
+  if (Number.isNaN(value)) throw new RangeError("The value of the measure is NaN.");
+  const i = limits.findIndex((limit) => value <= limit);
+  return i === -1 ? limits.length : i;
+}
 
 /** A term: a config of the space, or a combinator with its arguments. */
 export type StrategyTerm =
@@ -168,12 +181,13 @@ export function termDepth(term: StrategyTerm): number {
   return "config" in term ? 0 : 1 + Math.max(0, ...term.args.map(termDepth));
 }
 
-/** This function gives the path of the first key of `BUDGET_KEYS` in a value, or `undefined` when the value has none. */
+/** This function gives the path of the first key that starts with a key of `BUDGET_KEYS`, or `undefined` when the value has none. */
 function budgetKey(value: unknown, path: string): string | undefined {
   if (value === null || typeof value !== "object") return undefined;
   for (const [key, inner] of Object.entries(value)) {
     const at = path === "" ? key : `${path}.${key}`;
-    if (BUDGET_KEYS.includes(key)) return at;
+    const lower = key.toLowerCase();
+    if (BUDGET_KEYS.some((start) => lower.startsWith(start))) return at;
     const found = budgetKey(inner, at);
     if (found !== undefined) return found;
   }

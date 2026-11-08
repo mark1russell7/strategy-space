@@ -42,9 +42,9 @@ A combinator makes a term from terms. A config of the space is a term of the dep
 Some combinators take a spec, a JSON object of the term:
 
 - `portfolio`: the pick rule. An example is a hard level, the measures with their smallest effect, a rule and a stretch cap. The format does not read the fields of the rule.
-- `dispatch`: `{ measure, limits }`. A term with `m` arguments has `m - 1` increasing limits. An input below the first limit goes to the first argument, and so on.
+- `dispatch`: `{ measure, limits }`. A term with `m` arguments has `m - 1` increasing limits. A band includes its upper limit. So an input at or below the first limit goes to the first argument, and so on. An input above the last limit goes to the last argument. `dispatchIndex(limits, value)` gives the argument.
 
-A spec has no time budget. A time budget makes the result change with the speed of the computer, so the term is not deterministic. `checkTerm` refuses a spec with a key of `BUDGET_KEYS` (`budget`, `deadline` and `timeout`) at any depth.
+A spec has no time budget. A time budget makes the result change with the speed of the computer, so the term is not deterministic. `checkTerm` refuses a spec with a key that starts with a key of `BUDGET_KEYS` (`budget`, `deadline` and `timeout`), with case ignored, at any depth. An example is `budgetMs`.
 
 ### Ties
 

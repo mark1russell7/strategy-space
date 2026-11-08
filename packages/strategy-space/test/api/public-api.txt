@@ -73,6 +73,7 @@ configId: build/strategy-space.d.ts#configId
 countOperators: build/operators.d.ts#countOperators
 countSpace: build/terms.d.ts#countSpace
 declarationIssues: build/strategy-options.d.ts#declarationIssues
+dispatchIndex: build/terms.d.ts#dispatchIndex
 distinctCount: build/distinct.d.ts#distinctCount
 distinctness: build/distinct.d.ts#distinctness
 enumerateSpace: build/strategy-space.d.ts#enumerateSpace
@@ -535,6 +536,9 @@ export declare function checkTerm(space: StrategySpace, term: StrategyTerm, comb
 
 ### build/terms.d.ts#countSpace
 export declare function countSpace(space: StrategySpace, options: CountOptions): TermCount;
+
+### build/terms.d.ts#dispatchIndex
+export declare function dispatchIndex(limits: readonly number[], value: number): number;
 
 ### build/terms.d.ts#termDepth
 export declare function termDepth(term: StrategyTerm): number;

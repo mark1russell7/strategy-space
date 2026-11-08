@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   BUDGET_KEYS,
   canonicalTerm,
+  dispatchIndex,
   checkCombinators,
   checkTerm,
   COMBINATORS,
@@ -159,6 +160,26 @@ describe("checkTerm and termDepth", () => {
     expect(BUDGET_KEYS).toEqual(["budget", "deadline", "timeout"]);
     const breaks = checkTerm(space, { combinator: "portfolio", args: [a, b], spec: { ...pick, stretch: { cap: 2, timeout: 50 } } });
     expect(breaks.map((x) => [x.claim, x.detail])).toEqual([["budget", "the spec at the root has the time budget stretch.timeout, so the term is not deterministic"]]);
+  });
+
+  it("refuses a key that starts with a budget key, with case ignored, at the depth 2", () => {
+    const budget = (spec: Record<string, unknown>) => checkTerm(space, { combinator: "portfolio", args: [a, b], spec }).filter((x) => x.claim === "budget").map((x) => x.detail);
+    expect(budget({ rule: { stretch: { budgetMs: 50 } } })).toEqual(["the spec at the root has the time budget rule.stretch.budgetMs, so the term is not deterministic"]);
+    expect(budget({ timeoutMs: 50 })).toHaveLength(1);
+    expect(budget({ DeadlineAt: 50 })).toHaveLength(1);
+    expect(budget({ measures: [{ id: "length", budget: 1 }] })).toEqual(["the spec at the root has the time budget measures.0.budget, so the term is not deterministic"]);
+    // A key that has a budget word after its start is not a time budget.
+    expect(budget({ overBudget: 1, cap: 2 })).toEqual([]);
+  });
+});
+
+describe("dispatchIndex", () => {
+  it("gives a value equal to a limit to the band of that limit, and a value above the last limit to the last band", () => {
+    // The bands of the node count: 1 to 12, 13 to 50, and above 50.
+    const limits = [12, 50];
+    expect([1, 12, 13, 50, 51, 1e9].map((v) => dispatchIndex(limits, v))).toEqual([0, 0, 1, 1, 2, 2]);
+    expect(dispatchIndex([], 7)).toBe(0);
+    expect(() => dispatchIndex(limits, Number.NaN)).toThrow("NaN");
   });
 });
 
