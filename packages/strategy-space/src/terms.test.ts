@@ -168,8 +168,9 @@ describe("checkTerm and termDepth", () => {
     expect(budget({ timeoutMs: 50 })).toHaveLength(1);
     expect(budget({ DeadlineAt: 50 })).toHaveLength(1);
     expect(budget({ measures: [{ id: "length", budget: 1 }] })).toEqual(["the spec at the root has the time budget measures.0.budget, so the term is not deterministic"]);
-    // A key that has a budget word after its start is not a time budget.
+    // A key that has a budget word after its start is not a time budget. A work budget is a count of steps.
     expect(budget({ overBudget: 1, cap: 2 })).toEqual([]);
+    expect(budget({ budgetWork: 5000, BudgetWork: 1 })).toEqual([]);
   });
 });
 

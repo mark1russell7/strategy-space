@@ -1,6 +1,6 @@
 // The operators of a strategy space (`docs/OPERATORS.md`): the declaration of each mechanism at one stage, with its source and its parent.
 import type { ClaimBreak } from "./claim.ts";
-import type { StrategySpace } from "./strategy-space.ts";
+import type { StageOption, StrategySpace } from "./strategy-space.ts";
 
 /** The schema of a set of operators. */
 export const OPERATOR_SCHEMA = "strategy-operators/1";
@@ -47,9 +47,19 @@ const isText = (value: unknown): value is string => typeof value === "string" &&
 
 /**
  * This function gives the breaks of a set of operators against its space. An empty list tells that the set is good.
- * The claims are `schema`, `engine`, `unknown`, `duplicate`, `source`, `parent`, `cycle`, `cite`, `test`, `summary` and `undeclared`.
- * An option of the space without an operator gives the claim `undeclared`. The `inputs` of each break have the stage and the id.
+ * The claims are `schema`, `engine`, `unknown`, `duplicate`, `source`, `parent`, `cycle`, `cite`, `test`, `summary`, `undeclared` and `not-operator`.
+ * An option that `needsOperator` accepts and that has no operator gives the claim `undeclared`. An operator of another option gives `not-operator`.
+ * The `inputs` of each break have the stage and the id.
  */
+/**
+ * This function tells if an option is its own mechanism, so it needs an operator. An identity option needs none.
+ * A meta option with `chooses: true` needs none. A meta option that changes the output of its members needs one.
+ */
+export function needsOperator(option: StageOption): boolean {
+  if (option.identity === true) return false;
+  return option.members?.chooses !== true;
+}
+
 export function checkOperators(space: StrategySpace, set: OperatorSet): ClaimBreak[] {
   const out: ClaimBreak[] = [];
   const add = (claim: string, detail: string, inputs: readonly string[] = []): void => {
@@ -61,8 +71,10 @@ export function checkOperators(space: StrategySpace, set: OperatorSet): ClaimBre
   for (const o of set.operators) {
     const key = `${o.stage}.${o.id}`;
     const stage = space.stages.find((s) => s.name === o.stage);
+    const option = stage?.options.find((x) => x.id === o.id);
     if (stage === undefined) add("unknown", `the operator ${key} names the unknown stage ${o.stage}`, [key]);
-    else if (!stage.options.some((x) => x.id === o.id)) add("unknown", `the operator ${key} is not an option of the stage ${o.stage}`, [key]);
+    else if (option === undefined) add("unknown", `the operator ${key} is not an option of the stage ${o.stage}`, [key]);
+    else if (!needsOperator(option)) add("not-operator", `the option ${key} is an identity option or only chooses a member, so it is not an operator`, [key]);
     if (seen.has(key)) add("duplicate", `the set has the operator ${key} two times`, [key]);
     else seen.set(key, o);
     if (!(OPERATOR_SOURCES as readonly string[]).includes(o.source)) add("source", `the operator ${key} has the source ${JSON.stringify(o.source)}, not one of ${OPERATOR_SOURCES.join(", ")}`, [key]);
@@ -91,11 +103,14 @@ export function checkOperators(space: StrategySpace, set: OperatorSet): ClaimBre
   }
   for (const s of space.stages)
     for (const option of s.options)
-      if (option.members === undefined && !seen.has(`${s.name}.${option.id}`)) add("undeclared", `the option ${s.name}.${option.id} has no operator`, [`${s.name}.${option.id}`]);
+      if (needsOperator(option) && !seen.has(`${s.name}.${option.id}`)) add("undeclared", `the option ${s.name}.${option.id} has no operator`, [`${s.name}.${option.id}`]);
   return out;
 }
 
-/** This function gives the count of the operators of a set, by stage and by source. The count does not include a meta option. */
+/**
+ * This function gives the count of the operators of a set, by stage and by source. It counts each operator of the set.
+ * `checkOperators` refuses an operator of an option that `needsOperator` refuses. So a good set counts only the mechanisms.
+ */
 export function countOperators(set: OperatorSet): OperatorCount {
   const byStage: Record<string, number> = {};
   const bySource: Record<OperatorSource, number> = { literature: 0, ours: 0, mutation: 0 };

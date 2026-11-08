@@ -6,6 +6,13 @@ This file tells the draft of the operator format and of the combinators. The for
 
 An operator is its own mechanism at one stage of a space. It has a declaration and a test. A param value of an option is not an operator.
 
+Two kinds of option need no operator. `needsOperator(option)` tells the rule:
+
+- An identity option (`identity: true`) gives its input with no change. An example is the order of the input, or no local search.
+- A meta option with `chooses: true` in its member rule only chooses the output of one member. An example is a portfolio of whole configs.
+
+A meta option that changes the output of its members is an operator. An example is a search that moves the boxes of its member.
+
 | Field | Value |
 | --- | --- |
 | `id` | The id of the option of the stage that the operator is. |
@@ -19,7 +26,8 @@ An operator is its own mechanism at one stage of a space. It has a declaration a
 A set of operators has the schema `strategy-operators/1`, the `engine` of its space and the list. `checkOperators(space, set)` gives the breaks:
 
 - `unknown`: the stage or the option is not in the space.
-- `undeclared`: an option of the space has no operator. A meta option needs no operator.
+- `undeclared`: an option of the space that needs an operator has no operator.
+- `not-operator`: the set has an operator of an option that needs none.
 - `parent`: a mutation has no parent, or the parent is not an operator of the same stage.
 - `cycle`: the parents make a cycle.
 - `duplicate`, `source`, `cite`, `test` and `summary`: a field is repeated, bad or empty.
@@ -41,10 +49,10 @@ A combinator makes a term from terms. A config of the space is a term of the dep
 
 Some combinators take a spec, a JSON object of the term:
 
-- `portfolio`: the pick rule. An example is a hard level, the measures with their smallest effect, a rule and a stretch cap. The format does not read the fields of the rule.
+- `portfolio`: the pick rule. The space has no score, so the spec gives the rank. An example is a hard level, the measure ids with their smallest effect, a rule and a stretch cap. The format does not read the fields of the rule.
 - `dispatch`: `{ measure, limits }`. A term with `m` arguments has `m - 1` increasing limits. A band includes its upper limit. So an input at or below the first limit goes to the first argument, and so on. An input above the last limit goes to the last argument. `dispatchIndex(limits, value)` gives the argument.
 
-A spec has no time budget. A time budget makes the result change with the speed of the computer, so the term is not deterministic. `checkTerm` refuses a spec with a key that starts with a key of `BUDGET_KEYS` (`budget`, `deadline` and `timeout`), with case ignored, at any depth. An example is `budgetMs`.
+A param of an option, for example a work budget, is part of a config. So each of its levels is a term of the depth 0, and `countSpace` counts it. A spec has no time budget. A time budget makes the result change with the speed of the computer, so the term is not deterministic. `checkTerm` refuses a spec with a key that starts with a key of `BUDGET_KEYS` (`budget`, `deadline` and `timeout`), with case ignored, at any depth. An example is `budgetMs`. A key that ends with `work`, for example `budgetWork`, is a count of steps, so a spec can have it.
 
 ### Ties
 

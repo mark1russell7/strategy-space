@@ -79,6 +79,7 @@ distinctness: build/distinct.d.ts#distinctness
 enumerateSpace: build/strategy-space.d.ts#enumerateSpace
 joinConfigs: build/strategy-space.d.ts#joinConfigs
 listOptions: build/strategy-options.d.ts#listOptions
+needsOperator: build/operators.d.ts#needsOperator
 optionDefaults: build/strategy-options.d.ts#optionDefaults
 optionIssue: build/strategy-options.d.ts#optionIssue
 paramActive: build/strategy-space.d.ts#paramActive
@@ -176,6 +177,9 @@ export declare function checkOperators(space: StrategySpace, set: OperatorSet): 
 
 ### build/operators.d.ts#countOperators
 export declare function countOperators(set: OperatorSet): OperatorCount;
+
+### build/operators.d.ts#needsOperator
+export declare function needsOperator(option: StageOption): boolean;
 
 ### build/strategy-options.d.ts#AnyOption
 export type AnyOption<S extends string = string> = NumberOption | BooleanOption | EnumOption | ValueOption<unknown, S>;
@@ -326,6 +330,7 @@ export interface MemberRule {
   readonly ordered: boolean;
   readonly pool?: readonly (readonly StrategyConfig[])[];
   readonly view?: "bounds";
+  readonly chooses?: boolean;
 }
 
 ### build/strategy-space.d.ts#OptionRef
@@ -423,6 +428,7 @@ export interface StageOption {
   readonly params: readonly SpaceParam[];
   readonly members?: MemberRule;
   readonly supports?: OptionSupports;
+  readonly identity?: boolean;
 }
 
 ### build/strategy-space.d.ts#StrategyConfig

@@ -53,7 +53,7 @@ export const COMBINATORS: readonly Combinator[] = /* @__PURE__ */ Object.freeze(
 
 /**
  * The starts of the keys that a spec can not have at any depth, with case ignored, for example `budgetMs` or `timeoutMs`.
- * A time budget makes the result change with the speed of the computer.
+ * A time budget makes the result change with the speed of the computer. A key that ends with `work`, for example `budgetWork`, is a count of steps, so a spec can have it.
  */
 export const BUDGET_KEYS: readonly string[] = /* @__PURE__ */ Object.freeze(["budget", "deadline", "timeout"]);
 
@@ -187,7 +187,7 @@ function budgetKey(value: unknown, path: string): string | undefined {
   for (const [key, inner] of Object.entries(value)) {
     const at = path === "" ? key : `${path}.${key}`;
     const lower = key.toLowerCase();
-    if (BUDGET_KEYS.some((start) => lower.startsWith(start))) return at;
+    if (BUDGET_KEYS.some((start) => lower.startsWith(start)) && !lower.endsWith("work")) return at;
     const found = budgetKey(inner, at);
     if (found !== undefined) return found;
   }
