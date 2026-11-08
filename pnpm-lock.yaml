@@ -177,10 +177,10 @@ importers:
         version: 0.38.1
       '@mark1russell7/cue':
         specifier: ^2.0.0
-        version: 2.1.1
+        version: 2.1.2
       '@mark1russell7/ste-lint':
-        specifier: ^0.1.1
-        version: 0.1.3
+        specifier: ^0.3.0
+        version: 0.3.0
       '@mark1russell7/template-cli':
         specifier: ^0.1.5
         version: 0.1.5
@@ -207,7 +207,7 @@ importers:
     devDependencies:
       '@mark1russell7/cue':
         specifier: ^2.0.0
-        version: 2.1.1
+        version: 2.1.2
       '@mark1russell7/site-pages':
         specifier: ^0.4.1
         version: 0.4.1
@@ -235,7 +235,7 @@ importers:
     devDependencies:
       '@mark1russell7/cue':
         specifier: ^2.0.0
-        version: 2.1.1
+        version: 2.1.2
       '@types/node':
         specifier: ^26.6.5
         version: 26.6.6
@@ -459,8 +459,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@mark1russell7/cue@2.1.1':
-    resolution: {integrity: sha512-0/L9nQwGqUTCLTnUPtYKJ/cvXTr/gJWFWASUzGUjKyj3LxNpYgAplLuTPNQe0g4kjcM+9JAb/D/IfYwBGvM/mA==}
+  '@mark1russell7/cue@2.1.2':
+    resolution: {integrity: sha512-PjEWeyq353cz3gZyNmYkv/rUChybd3h9BWRW3UWP+fs0s7/CwGeVRzCpYLnvLR4gyHC367G/PS3kqWJO9GEAkg==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -485,8 +485,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@mark1russell7/ste-lint@0.1.3':
-    resolution: {integrity: sha512-wDsYHFooJpEtyrKwcmTcvmIG2USVyIplEclYXNz8/WZoBDlbDlIDY7OWNxxMAHee0VKkHspQ/ZYxbrrO+9vvuQ==}
+  '@mark1russell7/ste-lint@0.3.0':
+    resolution: {integrity: sha512-Z5GuoAvFk9Vf4tnN/XTHiffbU2SjtZb0EtcQsLJlSAApkXovQZTPOtCFyvRbcU+qMINiXJMXppwolSsxya6s8A==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -1703,7 +1703,7 @@ snapshots:
     dependencies:
       yaml: 2.9.1
 
-  '@mark1russell7/cue@2.1.1': {}
+  '@mark1russell7/cue@2.1.2': {}
 
   '@mark1russell7/rigor-generators@0.1.6': {}
 
@@ -1721,7 +1721,7 @@ snapshots:
     dependencies:
       '@mark1russell7/rigor-statistics': 0.1.20
 
-  '@mark1russell7/ste-lint@0.1.3':
+  '@mark1russell7/ste-lint@0.3.0':
     dependencies:
       typescript: 6.0.3
 
