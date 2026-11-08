@@ -65,6 +65,11 @@ export interface MemberRule {
    * Then a shape filter checks the members with the kind `rect`, and the option itself with the kinds of the input. Without `view`, the members get the kinds of the input.
    */
   readonly view?: "bounds";
+  /**
+   * With `true`, the option only chooses the output of one member, for example the best member by a score. It does not change that output.
+   * Such an option needs no operator. A meta option that changes the output of its members, for example a search over their layouts, is an operator.
+   */
+  readonly chooses?: boolean;
 }
 
 /** The inputs that an option supports. A missing field supports each value. */
@@ -80,6 +85,11 @@ export interface StageOption {
   readonly members?: MemberRule;
   /** The inputs that the option supports. It describes the option, so it is not part of a config or of its id. */
   readonly supports?: OptionSupports;
+  /**
+   * With `true`, the option gives its input with no change, for example the order of the input or no local search. It needs no operator.
+   * An identity option has no params and no members. The field describes the option, so it is not part of a config or of its id.
+   */
+  readonly identity?: boolean;
 }
 
 /** The known shape kinds of a check. Without `kinds`, each string that is not empty is a shape kind. */
@@ -342,6 +352,9 @@ function optionProblems(stage: SpaceStage, o: StageOption, kinds: readonly strin
     }
   });
   if (o.supports !== undefined) out.push(...supportsProblems(o.supports, at, kinds));
+  const identity: unknown = o.identity;
+  if (identity !== undefined && typeof identity !== "boolean") out.push(["identity", `${at} has the identity ${show(identity)}, not a boolean`]);
+  if (identity === true && (o.params.length > 0 || o.members !== undefined)) out.push(["identity", `${at} is an identity option, so it has no params and no members`]);
   if (o.members !== undefined) {
     const { min, max, ordered } = o.members;
     const noList = min === 0 && max === 0;
@@ -354,6 +367,8 @@ function optionProblems(stage: SpaceStage, o: StageOption, kinds: readonly strin
       out.push(["pool", `${at} has a pool that is not a list of one or more member lists`]);
     const view: unknown = o.members.view;
     if (view !== undefined && view !== "bounds") out.push(["view", `${at} has the member view ${show(view)}, not "bounds"`]);
+    const chooses: unknown = o.members.chooses;
+    if (chooses !== undefined && typeof chooses !== "boolean") out.push(["members", `${at} has a member rule with the chooses ${show(chooses)}, not a boolean`]);
   }
   return out;
 }
