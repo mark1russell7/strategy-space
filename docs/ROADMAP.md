@@ -4,7 +4,7 @@ This file is the plan of strategy-space. The Status page of the site reads it, a
 
 | ID | Item | Status | Summary |
 | --- | --- | --- | --- |
-| R1 | The first package | in progress | Move the schema `strategy-space/1` from `layout-contract` 0.6.1 whole, with its tests. The shape kinds become string tags. Release 0.0.1. |
+| R1 | The first package | done in 0.0.1 | Move the schema `strategy-space/1` from `layout-contract` 0.6.1 whole, with its tests. The shape kinds become string tags. `layout-contract` 0.9.0 re-exports the format of 0.0.2 with the same names. |
 | R2 | The operator format | done in 0.0.2 | Each operator has an id, a stage, a source (`literature`, `ours` or `mutation`) and a parent. A test and a declaration go with each operator. `needsOperator` tells which options need none. |
 | R3 | The combinators | done in 0.0.2 | Portfolio, sequence, fallback and dispatch as terms over configs, each with an arity, a spec and a test. A product space joins two spaces. |
 | R4 | The count to a depth | done in 0.0.2 | `countSpace(space, { depth })` gives the count of the configs and terms to a combinator depth. |
