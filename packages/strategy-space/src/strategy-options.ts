@@ -221,6 +221,10 @@ export function optionIssue(key: string, value: unknown, d: AnyOption): OptionIs
       return typeof value === "function" ? undefined : issue("type", `The option "${key}" takes a function.`);
     case "list":
       return Array.isArray(value) ? undefined : issue("type", `The option "${key}" takes a list.`);
+    case "strategy":
+      // A strategy value is the key of a strategy, a strategy object, or an object that holds its options (`inlineOptions`).
+      if (typeof value === "string") return value !== "" ? undefined : issue("value", `The option "${key}" takes the key of a strategy, not an empty string.`);
+      return typeof value === "object" && value !== null ? undefined : issue("type", `The option "${key}" takes the key of a strategy or an object.`);
     default:
       return typeof value === "object" && value !== null ? undefined : issue("type", `The option "${key}" takes an object.`);
   }

@@ -80,6 +80,22 @@ describe("the check of values", () => {
     expect(checkOptions<object>({ name: "x", defaults: {} }, { a: 1 })).toEqual([]);
   });
 
+  it("takes the key of a strategy or an object for a strategy option", () => {
+    const d = { type: "strategy", describe: "x", step: "group" } as const;
+    expect(optionIssue("s", "quadtree", d)).toBeUndefined();
+    expect(optionIssue("s", { name: "quadtree" }, d)).toBeUndefined();
+    expect(optionIssue("s", { strategy: "maxrects", options: {} }, { ...d, inlineOptions: true })).toBeUndefined();
+    expect(optionIssue("s", "", d)?.problem).toBe("value");
+    for (const bad of [1, null, true]) expect(optionIssue("s", bad, d)?.problem).toBe("type");
+    expect(optionIssue("o", "quadtree", { type: "object", describe: "x" })?.problem).toBe("type");
+  });
+
+  it("accepts a schema whose strategy option has the key of a strategy as its default", () => {
+    const member = { name: "member", defaults: { strategy: "maxrects" }, schema: { strategy: { type: "strategy", describe: "The member.", kinds: ["single"], default: "maxrects" } } } as const;
+    expect(checkSchema(member)).toEqual([]);
+    expect(checkSchema({ ...member, defaults: { strategy: 7 } } as never)).toHaveLength(1);
+  });
+
   it("examines a function option", () => {
     const d = { type: "function", describe: "x" } as const;
     expect(optionIssue("f", () => 1, d)).toBeUndefined();
