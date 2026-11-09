@@ -454,6 +454,7 @@ export interface SpaceStage {
   readonly name: string;
   readonly options: readonly StageOption[];
   readonly optional?: boolean;
+  readonly omitUnused?: boolean;
 }
 
 ### build/strategy-space.d.ts#StageChoice

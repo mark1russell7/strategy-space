@@ -216,6 +216,62 @@ describe("canonicalConfig and configId", () => {
   });
 });
 
+describe("a new optional stage with omitUnused", () => {
+  const compact: SpaceStage = { name: "compact", optional: true, omitUnused: true, options: [{ id: "slide", params: [{ name: "passes", kind: "int", min: 1, max: 4, default: 1 }] }] };
+  /** The space `pack` after it gains the stage `compact` after `combine`. */
+  const gained: StrategySpace = { ...pack, version: "0.0.2", stages: [...pack.stages, compact] };
+  const portfolio = pack.named!["portfolio-k2"]!;
+
+  it("keeps the id of each earlier config, also of a meta option with members", () => {
+    expect(checkSpace(gained, kinds)).toEqual([]);
+    expect(configId(gained, maxrectsCp)).toBe(PINNED);
+    expect(configId(gained, shelfFirst)).toBe(configId(pack, shelfFirst));
+    expect(configId(gained, portfolio)).toBe(configId(pack, portfolio));
+    expect(canonicalConfig(gained, maxrectsCp)).toEqual(canonicalConfig(pack, maxrectsCp));
+  });
+
+  it("gives a new id to each earlier config without omitUnused", () => {
+    const plain: StrategySpace = { ...gained, stages: [...pack.stages, { ...compact, omitUnused: false }] };
+    expect(checkSpace(plain, kinds)).toEqual([]);
+    expect(canonicalConfig(plain, maxrectsCp).stages["compact"]).toBeNull();
+    expect(configId(plain, maxrectsCp)).not.toBe(PINNED);
+  });
+
+  it("gives one id to a config with the stage null and without the stage, and a new id when the config uses it", () => {
+    const withNull: StrategyConfig = { space: "pack", stages: { ...maxrectsCp.stages, compact: null } };
+    expect(configId(gained, withNull)).toBe(PINNED);
+    const used: StrategyConfig = { space: "pack", stages: { ...maxrectsCp.stages, compact: { option: "slide" } } };
+    expect(canonicalConfig(gained, used).stages["compact"]).toEqual({ option: "slide", params: { passes: 1 } });
+    expect(configId(gained, used)).not.toBe(PINNED);
+  });
+
+  it("keeps the ids of the grid: the configs without the stage are the configs of the earlier space", () => {
+    const before = enumerateSpace(pack, { mode: "grid", levels: 3 }).map((c) => configId(pack, c));
+    const after = enumerateSpace(gained, { mode: "grid", levels: 3 });
+    const unused = after.filter((c) => !Object.hasOwn(c.stages, "compact"));
+    expect(unused.map((c) => configId(gained, c)).sort()).toEqual([...before].sort());
+    expect(after.length).toBe(before.length * 4);
+    expect(after.every((c) => c.stages["compact"] !== null)).toBe(true);
+  });
+
+  it("samples with the stage fixed, and keeps the flag in a product space", () => {
+    const fixed = enumerateSpace(gained, { mode: "sample", n: 5, seed: 3, fixed: { compact: "slide" } });
+    expect(fixed.length).toBeGreaterThan(0);
+    expect(fixed.every((c) => c.stages["compact"]?.option === "slide")).toBe(true);
+    const joint = productSpace(gained, route, "joint");
+    expect(checkSpace(joint, kinds)).toEqual([]);
+    const both = joinConfigs("joint", [maxrectsCp, route.named!["shared"]!]);
+    expect(configId(joint, both)).toBe(configId(productSpace(pack, route, "joint"), both));
+  });
+
+  it("refuses omitUnused on a stage that is not optional, and a value that is not a boolean", () => {
+    expect(claims(withStage(0, { omitUnused: true }))).toEqual(["omit"]);
+    expect(checkSpace(withStage(0, { omitUnused: true })).map((b) => b.detail)).toEqual(["the stage order has omitUnused but is not optional"]);
+    expect(claims(withStage(2, { omitUnused: "yes" }))).toEqual(["omit"]);
+    expect(claims(withStage(0, { omitUnused: false }))).toEqual([]);
+  });
+});
+
 describe("spaceSize with constraints over many stages", () => {
   const ids = ["a", "b", "c"] as const;
   const stages = ["s0", "s1", "s2", "s3", "s4"].map((name, i) => ({ name, ...(i % 2 === 0 ? { optional: true } : {}), options: ids.map((id) => ({ id, params: [] })) }));

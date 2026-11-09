@@ -109,6 +109,11 @@ export interface SpaceStage {
   readonly name: string;
   readonly options: readonly StageOption[];
   readonly optional?: boolean;
+  /**
+   * With `true`, the canonical form of a config leaves out this stage when the config does not use it. Without it, an unused optional stage is `null`.
+   * A space that gains a new optional stage with `omitUnused` keeps the id of each earlier config. Only an `optional` stage can have it.
+   */
+  readonly omitUnused?: boolean;
 }
 
 /** A reference to one option of a stage. The option `null` refers to an optional stage that a config does not use. */
@@ -574,6 +579,8 @@ export function checkSpace(space: StrategySpace, kindOptions: KindOptions = {}):
       out.push(...optionProblems(s, o, kindOptions.kinds));
     });
     if (!s.optional && options.every((o) => o.members !== undefined)) out.push(["meta", `the stage ${s.name} is not optional and has only meta options, so no base config exists`]);
+    if (s.omitUnused !== undefined && typeof s.omitUnused !== "boolean") out.push(["omit", `the omitUnused of the stage ${s.name} is ${show(s.omitUnused)}, not a boolean`]);
+    else if (s.omitUnused === true && s.optional !== true) out.push(["omit", `the stage ${s.name} has omitUnused but is not optional`]);
   });
   const known = (ref: OptionRef, at: string): void => {
     const s = space.stages.find((x) => x.name === ref?.stage);
@@ -604,7 +611,7 @@ function canonicalOf(space: StrategySpace, config: StrategyConfig, member: boole
   for (const s of space.stages) {
     const c = Object.hasOwn(config.stages, s.name) ? config.stages[s.name] : undefined;
     if (c === undefined || c === null) {
-      stages[s.name] = null;
+      if (s.omitUnused !== true) stages[s.name] = null;
       continue;
     }
     const o = s.options.find((x) => x.id === c.option)!;
@@ -627,7 +634,7 @@ const idOf = (canonical: StrategyConfig): string => sha256Hex(canonicalJson(cano
 
 /**
  * This function gives the canonical form of a config: each stage of the space, the active params only, the defaults, and stable numbers.
- * An unused optional stage is `null`. The members of an unordered meta option are sorted by their `configId`.
+ * An unused optional stage is `null`, and an unused stage with `omitUnused` is not in the form. The members of an unordered meta option are sorted by their `configId`.
  * It throws an `Error` for a config with a break of `checkConfig`.
  */
 export function canonicalConfig(space: StrategySpace, config: StrategyConfig): StrategyConfig {
@@ -981,7 +988,9 @@ function fixStages(space: StrategySpace, kept: StrategySpace, fixed: Readonly<Re
     // A fixed meta option takes its members from the space before the fix, because the fix removes each base config of its own stage.
     const options = s.options.filter((o) => o.id === id).map((o) => (o.members === undefined ? o : withMemberSpace(o, memberSpaces.get(o) ?? partOf(kept, s.name).space)));
     if (options.length === 0) throw new RangeError(`The fixed option ${s.name}.${id} of the space ${space.engine} does not support the shape kinds ${(shapes ?? []).join(", ")}.`);
-    return { ...s, options, optional: false };
+    // A fixed stage always has an option, so omitUnused has no effect on it, and a stage that is not optional cannot have it.
+    const { omitUnused: _, ...stage } = s;
+    return { ...stage, options, optional: false };
   });
   return { ...kept, stages };
 }
