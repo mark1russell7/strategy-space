@@ -8,7 +8,9 @@ import {
   configId,
   enumerateSpace,
   joinConfigs,
+  paramAt,
   paramLevels,
+  paramUnit,
   productSpace,
   spaceShapeKinds,
   spaceSize,
@@ -17,6 +19,7 @@ import {
   type MemberRule,
   type OptionSupports,
   type SampleOptions,
+  type SpaceParam,
   type SpaceStage,
   type StageOption,
   type StrategyConfig,
@@ -1130,5 +1133,50 @@ describe("the fixed options of a sample", () => {
     );
     // Flip: with the kind rect, the fixed option stays.
     for (const c of enumerateSpace(rectOnly, { ...options, shapes: ["rect"], fixed: { placement: "shelf" } })) expect(c.stages["placement"]?.option).toBe("shelf");
+  });
+});
+
+describe("paramAt and paramUnit", () => {
+  const linear: SpaceParam = { name: "gap", kind: "real", min: 2, max: 12, default: 2 };
+  const log: SpaceParam = { name: "budget", kind: "int", min: 1, max: 100, scale: "log", default: 10 };
+  const fromZero: SpaceParam = { name: "count", kind: "int", min: 0, max: 99, scale: "log", default: 0 };
+
+  it("gives the value at a fraction of the range on each scale", () => {
+    expect(paramAt(linear, 0)).toBe(2);
+    expect(paramAt(linear, 0.5)).toBe(7);
+    expect(paramAt(linear, 1)).toBe(12);
+    expect(paramAt(log, 0)).toBe(1);
+    expect(paramAt(log, 0.5)).toBeCloseTo(10, 12);
+    expect(paramAt(log, 1)).toBe(100);
+    // The log of 1 + x - min: 1 + 9 is the middle of 1 and 100 on a log scale.
+    expect(paramAt(fromZero, 0)).toBe(0);
+    expect(paramAt(fromZero, 0.5)).toBeCloseTo(9, 12);
+    expect(paramAt(fromZero, 1)).toBe(99);
+  });
+
+  it("moves a fraction out of [0, 1] to the near end, and does not go to the step", () => {
+    expect(paramAt(linear, -1)).toBe(2);
+    expect(paramAt(linear, 2)).toBe(12);
+    expect(paramAt({ ...linear, step: 5 }, 0.1)).toBe(3);
+    expect(paramAt({ ...linear, min: 4, max: 4 }, 0.5)).toBe(4);
+  });
+
+  it("is the inverse of paramUnit on each scale", () => {
+    for (const param of [linear, log, fromZero]) {
+      for (const u of [0, 0.125, 0.5, 0.9, 1]) expect(paramUnit(param, paramAt(param, u))).toBeCloseTo(u, 12);
+    }
+    expect(paramUnit(linear, 7)).toBe(0.5);
+    expect(paramUnit(linear, 100)).toBe(1);
+    expect(paramUnit({ ...linear, min: 4, max: 4 }, 4)).toBe(0);
+  });
+
+  it("refuses a bool or an enum param", () => {
+    expect(() => paramAt({ name: "on", kind: "bool", default: false }, 0.5)).toThrow(RangeError);
+    expect(() => paramUnit({ name: "side", kind: "enum", values: ["a", "b"], default: "a" }, 0)).toThrow(/not the enum param side/);
+  });
+
+  it("gives the grid points of paramLevels on a log scale", () => {
+    expect(paramLevels(log, 3)).toEqual([1, 10, 100]);
+    expect(paramLevels(log, 3)).toEqual([0, 0.5, 1].map((u) => Math.round(paramAt(log, u))));
   });
 });

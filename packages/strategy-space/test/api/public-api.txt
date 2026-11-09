@@ -86,8 +86,10 @@ needsOperator: build/operators.d.ts#needsOperator
 optionDefaults: build/strategy-options.d.ts#optionDefaults
 optionIssue: build/strategy-options.d.ts#optionIssue
 paramActive: build/strategy-space.d.ts#paramActive
+paramAt: build/strategy-space.d.ts#paramAt
 paramLevels: build/strategy-space.d.ts#paramLevels
 paramProblem: build/strategy-space.d.ts#paramProblem
+paramUnit: build/strategy-space.d.ts#paramUnit
 paramValue: build/strategy-space.d.ts#paramValue
 productSpace: build/strategy-space.d.ts#productSpace
 race: build/race.d.ts#race
@@ -508,11 +510,17 @@ export declare function joinConfigs(space: string, parts: readonly StrategyConfi
 ### build/strategy-space.d.ts#paramActive
 export declare function paramActive(param: SpaceParam, values: Readonly<Record<string, ParamValue>>): boolean;
 
+### build/strategy-space.d.ts#paramAt
+export declare function paramAt(param: SpaceParam, t: number): number;
+
 ### build/strategy-space.d.ts#paramLevels
 export declare function paramLevels(param: SpaceParam, levels: number): ParamValue[];
 
 ### build/strategy-space.d.ts#paramProblem
 export declare function paramProblem(param: SpaceParam, value: unknown): string | undefined;
+
+### build/strategy-space.d.ts#paramUnit
+export declare function paramUnit(param: SpaceParam, value: number): number;
 
 ### build/strategy-space.d.ts#paramValue
 export declare function paramValue(param: SpaceParam, value: ParamValue): ParamValue;
