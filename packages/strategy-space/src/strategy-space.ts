@@ -47,7 +47,7 @@ export interface SpaceParam {
 }
 
 /**
- * The rule of the members of a meta option: a count from `min` to `max`. Members with `ordered: false` are sorted by their `configId`.
+ * The rule of the members of a meta option: a count from `min` to `max`. `canonicalConfig` sorts the members with `ordered: false` by their `configId`.
  * With `min` and `max` 0, the option chooses its members from the input, so a config lists none. This form has no `pool` and no `view`.
  */
 export interface MemberRule {
@@ -605,7 +605,7 @@ export function checkSpace(space: StrategySpace, kindOptions: KindOptions = {}):
   return breaks;
 }
 
-/** This function gives the canonical form of a config that is known to be good. */
+/** This function gives the canonical form of a config without a break of `checkConfig`. */
 function canonicalOf(space: StrategySpace, config: StrategyConfig, member: boolean): StrategyConfig {
   const stages: Record<string, StageChoice | null> = {};
   for (const s of space.stages) {
@@ -634,7 +634,7 @@ const idOf = (canonical: StrategyConfig): string => sha256Hex(canonicalJson(cano
 
 /**
  * This function gives the canonical form of a config: each stage of the space, the active params only, the defaults, and stable numbers.
- * An unused optional stage is `null`, and an unused stage with `omitUnused` is not in the form. The members of an unordered meta option are sorted by their `configId`.
+ * An unused optional stage is `null`, and an unused stage with `omitUnused` is not in the form. The function sorts the members of an unordered meta option by their `configId`.
  * It throws an `Error` for a config with a break of `checkConfig`.
  */
 export function canonicalConfig(space: StrategySpace, config: StrategyConfig): StrategyConfig {
@@ -834,7 +834,7 @@ function combos(space: StrategySpace, levels: number, meta: boolean, limit: bigi
   };
   const out: Combo[] = [];
   const stages = space.stages;
-  // A space can have hundreds of constraints. Each one is examined at its last stage, so the walk leaves a branch at the first break.
+  // A space can have hundreds of constraints. The walk examines each constraint at its last stage, so it leaves a branch at the first break.
   const checks = constraintsByStage(space);
   const ids = new Map<string, string | null>();
   const walk = (i: number, choices: Map<string, StageOption | null>, weight: bigint): void => {
@@ -1010,7 +1010,7 @@ function noFixedSample(space: StrategySpace, fixed: Readonly<Record<string, stri
   );
 }
 
-/** This function gives the count of the base configs of a space that is known to be good. */
+/** This function gives the count of the base configs of a space without a break of `checkSpace`. */
 const baseCount = (space: StrategySpace, levels: number, limit: bigint): bigint => combos(space, levels, false, limit).reduce((sum, c) => sum + c.weight!, 0n);
 
 /** This function throws a `RangeError` for a list of shape kinds with a kind that is not known. */
@@ -1023,7 +1023,7 @@ function assertShapes(shapes: readonly string[] | undefined, kinds: readonly str
   }
 }
 
-/** This function gives the count of the grid points of a space that is known to be good. */
+/** This function gives the count of the grid points of a space without a break of `checkSpace`. */
 function sizeOf(space: StrategySpace, levels: number, limit: bigint): SpaceSize {
   let base = 0n;
   let meta: bigint | null = 0n;
