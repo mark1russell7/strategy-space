@@ -58,6 +58,8 @@ A param of an option, for example a work budget, is part of a config. So each of
 
 A `portfolio` has no order of its arguments. So a tie goes to the first argument of the canonical form. `canonicalTerm(term)` sorts the arguments of each unordered term by their canonical JSON. Two terms that differ only in this order give the same form.
 
+`canonicalTerm(term, COMBINATORS, space)` also puts each config in its canonical form before the sort. Then two spellings of one config give one form and one tie. The `distinct` claim of `checkTerm` also compares the canonical forms of the configs.
+
 The product of a packer and a router is `productSpace`. It makes one space of two spaces, so it is not a term over the configs of one space.
 
 `checkTerm(space, term)` gives the breaks of a term. A break is a bad config, an unknown combinator or a bad count of arguments. A repeated argument, a bad spec and a time budget are breaks too. The `inputs` of a break give the path of the term, for example `1.0`.

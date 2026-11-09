@@ -1,7 +1,7 @@
 // The combinators of a strategy space (`docs/OPERATORS.md`): terms over configs, and the count of the terms to a depth.
 import { canonicalJson } from "@mark1russell7/rigor-generators";
 import type { ClaimBreak } from "./claim.ts";
-import { checkConfig, spaceSize, type ShapeFilter, type StrategyConfig, type StrategySpace } from "./strategy-space.ts";
+import { canonicalConfig, checkConfig, spaceSize, type ShapeFilter, type StrategyConfig, type StrategySpace } from "./strategy-space.ts";
 
 /** The declaration of a combinator: a term with a range of arguments. */
 export interface Combinator {
@@ -232,7 +232,8 @@ export function checkTerm(space: StrategySpace, term: StrategyTerm, combinators:
     const budget = budgetKey(t.spec, "");
     if (budget !== undefined) out.push({ claim: "budget", detail: `the spec at ${at} has the time budget ${budget}, so the term is not deterministic`, inputs: [path] });
     if (c?.distinct === true) {
-      const keys = t.args.map((a) => canonicalJson(a, { form: "json" }));
+      // Two spellings of one config are one argument, so the key is the canonical form. A config with a break keeps its spelling.
+      const keys = t.args.map((a) => canonicalJson(formOf(a, combinators, space, true), { form: "json" }));
       if (new Set(keys).size !== keys.length) out.push({ claim: "distinct", detail: `the term ${c.name} at ${at} has the same argument two times`, inputs: [path] });
     }
     t.args.forEach((a, i) => walk(a, path === "" ? String(i) : `${path}.${i}`));
@@ -244,10 +245,21 @@ export function checkTerm(space: StrategySpace, term: StrategyTerm, combinators:
 /**
  * This function gives the canonical form of a term. It sorts the arguments of each term of an unordered combinator by their canonical JSON.
  * Two terms that differ only in the order of such arguments give the same form. A tie of a `portfolio` goes to the first argument of this form.
+ *
+ * With a `space`, each config of the term becomes its `canonicalConfig` before the sort. Then two spellings of one config give one form and one order.
+ * With a `space`, the function throws an `Error` for a config with a break of `checkConfig`.
  */
-export function canonicalTerm(term: StrategyTerm, combinators: readonly Combinator[] = COMBINATORS): StrategyTerm {
-  if ("config" in term) return term;
-  const args = term.args.map((a) => canonicalTerm(a, combinators));
+export function canonicalTerm(term: StrategyTerm, combinators: readonly Combinator[] = COMBINATORS, space?: StrategySpace): StrategyTerm {
+  return formOf(term, combinators, space, false);
+}
+
+/** This function gives the form of `canonicalTerm`. With `keepBad`, a config with a break keeps its spelling, and the function does not throw. */
+function formOf(term: StrategyTerm, combinators: readonly Combinator[], space: StrategySpace | undefined, keepBad: boolean): StrategyTerm {
+  if ("config" in term) {
+    if (space === undefined || (keepBad && checkConfig(space, term.config).length > 0)) return term;
+    return { ...term, config: canonicalConfig(space, term.config) };
+  }
+  const args = term.args.map((a) => formOf(a, combinators, space, keepBad));
   const c = combinators.find((x) => x.name === term.combinator);
   if (c !== undefined && !c.ordered) {
     const keyed = args.map((a) => [canonicalJson(a, { form: "json" }), a] as const);

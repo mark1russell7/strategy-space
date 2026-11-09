@@ -580,7 +580,7 @@ export interface TermCount {
 }
 
 ### build/terms.d.ts#canonicalTerm
-export declare function canonicalTerm(term: StrategyTerm, combinators?: readonly Combinator[]): StrategyTerm;
+export declare function canonicalTerm(term: StrategyTerm, combinators?: readonly Combinator[], space?: StrategySpace): StrategyTerm;
 
 ### build/terms.d.ts#checkCombinators
 export declare function checkCombinators(combinators: readonly Combinator[]): ClaimBreak[];

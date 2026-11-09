@@ -142,6 +142,15 @@ describe("checkTerm and termDepth", () => {
     expect(checkTerm(space, { combinator: "portfolio", args: [a, swapped], spec: pick }).map((x) => x.claim)).toEqual(["distinct"]);
   });
 
+  it("finds a repeated argument when one config omits a default param and the other sets it", () => {
+    const short = { config: { space: "pack", stages: { order: { option: "area" }, placement: { option: "shelf" } } } };
+    const full = { config: { space: "pack", stages: { order: { option: "area" }, placement: { option: "shelf", params: { gap: 2 } } } } };
+    expect(checkTerm(space, { combinator: "fallback", args: [short, full] }).map((x) => x.claim)).toEqual(["distinct"]);
+    const nested = (x: StrategyTerm, y: StrategyTerm): StrategyTerm => ({ combinator: "portfolio", args: [x, y], spec: pick });
+    expect(checkTerm(space, { combinator: "fallback", args: [nested(short, b), nested(b, full)] }).map((x) => x.claim)).toEqual(["distinct"]);
+    expect(checkTerm(space, { combinator: "fallback", args: [short, b] })).toEqual([]);
+  });
+
   it("finds a missing spec, a spec on a combinator with no spec, and bad limits", () => {
     expect(checkTerm(space, { combinator: "portfolio", args: [a, b] }).map((x) => x.claim)).toEqual(["spec"]);
     expect(checkTerm(space, { combinator: "sequence", args: [a, b], spec: {} }).map((x) => x.claim)).toEqual(["spec"]);
@@ -195,5 +204,19 @@ describe("canonicalTerm", () => {
     expect(canonicalTerm(swapped)).not.toEqual(canonicalTerm(two));
     expect(canonicalTerm(canonicalTerm(one))).toEqual(canonicalTerm(one));
     expect(canonicalTerm(a)).toBe(a);
+  });
+
+  it("gives one form and one order to two spellings of one config with a space", () => {
+    const short = { config: { space: "pack", stages: { order: { option: "area" }, placement: { option: "shelf" } } } };
+    const full = { config: { space: "pack", stages: { order: { option: "area" }, placement: { option: "shelf", params: { gap: 2 } } } } };
+    const other = { config: { space: "pack", stages: { order: { option: "area" }, placement: { option: "shelf", params: { gap: 1 } } } } };
+    const one = canonicalTerm({ combinator: "portfolio", args: [short, other], spec: {} }, COMBINATORS, space);
+    const two = canonicalTerm({ combinator: "portfolio", args: [other, full], spec: {} }, COMBINATORS, space);
+    expect(one).toEqual(two);
+    expect(canonicalTerm(short, COMBINATORS, space)).toEqual(canonicalTerm(full, COMBINATORS, space));
+    // Without a space, the spelling changes the form.
+    expect(canonicalTerm(short)).not.toEqual(canonicalTerm(full));
+    const bad = { config: { space: "pack", stages: { order: { option: "none" } } } };
+    expect(() => canonicalTerm(bad, COMBINATORS, space)).toThrow("not good");
   });
 });
