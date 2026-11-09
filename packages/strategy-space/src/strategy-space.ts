@@ -1,5 +1,5 @@
 // The strategy space of an engine (`docs/STRATEGY-SPACE.md`): its stages, their options and the ranges of their params, as data.
-import { canonicalJson, fnv1a32, mulberry32, sha256Hex } from "@mark1russell7/rigor-generators";
+import { canonicalJson, fnv1a32, mulberry32, randomOf, sha256Hex } from "@mark1russell7/rigor-generators";
 import type { ClaimBreak } from "./claim.ts";
 import { holds, walkPlan, walkPoint } from "./space-walk.ts";
 
@@ -47,7 +47,7 @@ export interface SpaceParam {
 }
 
 /**
- * The rule of the members of a meta option: a count from `min` to `max`. Members with `ordered: false` are sorted by their `configId`.
+ * The rule of the members of a meta option: a count from `min` to `max`. `canonicalConfig` sorts the members with `ordered: false` by their `configId`.
  * With `min` and `max` 0, the option chooses its members from the input, so a config lists none. This form has no `pool` and no `view`.
  */
 export interface MemberRule {
@@ -109,6 +109,11 @@ export interface SpaceStage {
   readonly name: string;
   readonly options: readonly StageOption[];
   readonly optional?: boolean;
+  /**
+   * With `true`, the canonical form of a config leaves out this stage when the config does not use it. Without it, an unused optional stage is `null`.
+   * A space that gains a new optional stage with `omitUnused` keeps the id of each earlier config. Only an `optional` stage can have it.
+   */
+  readonly omitUnused?: boolean;
 }
 
 /** A reference to one option of a stage. The option `null` refers to an optional stage that a config does not use. */
@@ -574,6 +579,8 @@ export function checkSpace(space: StrategySpace, kindOptions: KindOptions = {}):
       out.push(...optionProblems(s, o, kindOptions.kinds));
     });
     if (!s.optional && options.every((o) => o.members !== undefined)) out.push(["meta", `the stage ${s.name} is not optional and has only meta options, so no base config exists`]);
+    if (s.omitUnused !== undefined && typeof s.omitUnused !== "boolean") out.push(["omit", `the omitUnused of the stage ${s.name} is ${show(s.omitUnused)}, not a boolean`]);
+    else if (s.omitUnused === true && s.optional !== true) out.push(["omit", `the stage ${s.name} has omitUnused but is not optional`]);
   });
   const known = (ref: OptionRef, at: string): void => {
     const s = space.stages.find((x) => x.name === ref?.stage);
@@ -598,13 +605,13 @@ export function checkSpace(space: StrategySpace, kindOptions: KindOptions = {}):
   return breaks;
 }
 
-/** This function gives the canonical form of a config that is known to be good. */
+/** This function gives the canonical form of a config without a break of `checkConfig`. */
 function canonicalOf(space: StrategySpace, config: StrategyConfig, member: boolean): StrategyConfig {
   const stages: Record<string, StageChoice | null> = {};
   for (const s of space.stages) {
     const c = Object.hasOwn(config.stages, s.name) ? config.stages[s.name] : undefined;
     if (c === undefined || c === null) {
-      stages[s.name] = null;
+      if (s.omitUnused !== true) stages[s.name] = null;
       continue;
     }
     const o = s.options.find((x) => x.id === c.option)!;
@@ -627,7 +634,7 @@ const idOf = (canonical: StrategyConfig): string => sha256Hex(canonicalJson(cano
 
 /**
  * This function gives the canonical form of a config: each stage of the space, the active params only, the defaults, and stable numbers.
- * An unused optional stage is `null`. The members of an unordered meta option are sorted by their `configId`.
+ * An unused optional stage is `null`, and an unused stage with `omitUnused` is not in the form. The function sorts the members of an unordered meta option by their `configId`.
  * It throws an `Error` for a config with a break of `checkConfig`.
  */
 export function canonicalConfig(space: StrategySpace, config: StrategyConfig): StrategyConfig {
@@ -827,7 +834,7 @@ function combos(space: StrategySpace, levels: number, meta: boolean, limit: bigi
   };
   const out: Combo[] = [];
   const stages = space.stages;
-  // A space can have hundreds of constraints. Each one is examined at its last stage, so the walk leaves a branch at the first break.
+  // A space can have hundreds of constraints. The walk examines each constraint at its last stage, so it leaves a branch at the first break.
   const checks = constraintsByStage(space);
   const ids = new Map<string, string | null>();
   const walk = (i: number, choices: Map<string, StageOption | null>, weight: bigint): void => {
@@ -981,7 +988,9 @@ function fixStages(space: StrategySpace, kept: StrategySpace, fixed: Readonly<Re
     // A fixed meta option takes its members from the space before the fix, because the fix removes each base config of its own stage.
     const options = s.options.filter((o) => o.id === id).map((o) => (o.members === undefined ? o : withMemberSpace(o, memberSpaces.get(o) ?? partOf(kept, s.name).space)));
     if (options.length === 0) throw new RangeError(`The fixed option ${s.name}.${id} of the space ${space.engine} does not support the shape kinds ${(shapes ?? []).join(", ")}.`);
-    return { ...s, options, optional: false };
+    // A fixed stage always has an option, so omitUnused has no effect on it, and a stage that is not optional cannot have it.
+    const { omitUnused: _, ...stage } = s;
+    return { ...stage, options, optional: false };
   });
   return { ...kept, stages };
 }
@@ -1001,7 +1010,7 @@ function noFixedSample(space: StrategySpace, fixed: Readonly<Record<string, stri
   );
 }
 
-/** This function gives the count of the base configs of a space that is known to be good. */
+/** This function gives the count of the base configs of a space without a break of `checkSpace`. */
 const baseCount = (space: StrategySpace, levels: number, limit: bigint): bigint => combos(space, levels, false, limit).reduce((sum, c) => sum + c.weight!, 0n);
 
 /** This function throws a `RangeError` for a list of shape kinds with a kind that is not known. */
@@ -1014,7 +1023,7 @@ function assertShapes(shapes: readonly string[] | undefined, kinds: readonly str
   }
 }
 
-/** This function gives the count of the grid points of a space that is known to be good. */
+/** This function gives the count of the grid points of a space without a break of `checkSpace`. */
 function sizeOf(space: StrategySpace, levels: number, limit: bigint): SpaceSize {
   let base = 0n;
   let meta: bigint | null = 0n;
@@ -1055,14 +1064,13 @@ function gridConfigs(space: StrategySpace, levels: number, limit: number, shapes
   return out;
 }
 
-/** This function gives a random order of the numbers from 0 to `n - 1`. */
+/**
+ * This function gives a random order of the numbers from 0 to `n - 1`, with the draws of `r`.
+ * The `shuffle` of `rigor-generators` takes one draw for each item from the end, so the order of a seed does not change.
+ * The seed 0 of `randomOf` has no effect, because the function does not fork the generator.
+ */
 function permutation(n: number, r: () => number): number[] {
-  const out = Array.from({ length: n }, (_, i) => i);
-  for (let i = n - 1; i > 0; i--) {
-    const j = Math.floor(r() * (i + 1));
-    [out[i], out[j]] = [out[j]!, out[i]!];
-  }
-  return out;
+  return randomOf(r, 0).shuffle(Array.from({ length: n }, (_, i) => i));
 }
 
 /** This function gives the value of a param at the fraction `u` of its range. A sampled real number has 6 significant digits. */

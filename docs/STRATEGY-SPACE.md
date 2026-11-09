@@ -23,6 +23,7 @@ The stage names belong to the engine. The contract does not fix them, and it doe
 ### Stages, options and params
 
 - A stage (`SpaceStage`) has a name and a list of options. A config of an `optional` stage can have no option. Then the value of the stage is `null`.
+- An `optional` stage can have `omitUnused: true`. Then the canonical form leaves out the stage when a config does not use it. The rules of the id tell the effect.
 - An option (`StageOption`) is one implementation of a stage. It has an id and a list of params.
 - A param (`SpaceParam`) has a name, a kind and a default. The kinds are `int`, `real`, `enum` and `bool`.
 - An `int` or `real` param has `min` and `max`. It can have a `step` from `min`, and the scale `linear` or `log`.
@@ -79,7 +80,7 @@ A config can leave out a param. Then the param has its default. A config can als
 
 `canonicalConfig(space, config)` gives the canonical form of a config:
 
-- Each stage of the space, in the order of the space. An unused optional stage is `null`.
+- Each stage of the space, in the order of the space. An unused optional stage is `null`. An unused stage with `omitUnused` is not in the form.
 - Only the active params, with the defaults of the params that the config does not set.
 - Stable numbers: whole numbers as integers, `-0` as `0`, and real numbers with 12 significant digits.
 - The canonical form of each member. The members of an unordered meta option are sorted by their `configId`.
@@ -88,6 +89,8 @@ A config can leave out a param. Then the param has its default. A config can als
 
 - Two spellings of one config get one id. For example, a default that the config leaves out and the same default in the config give one id.
 - The version of the engine is not part of a config or of its id. The `space` of a config names the space without its version. The record writes the version.
+- A new optional stage with `omitUnused` keeps the id of each earlier config, because an earlier config does not use the stage. Without `omitUnused`, the new `null` stage changes each id.
+- `omitUnused` cannot change on a stage that is in use. A change of the flag changes the id of each config that does not use the stage.
 
 ## The checks
 
@@ -104,6 +107,7 @@ A config can leave out a param. Then the param has its default. A config can als
 | `scale` | A param with the scale `log` has a `min` of 0 or less. |
 | `when` | A `when` refers to a later param, or has values that are not values of that param. |
 | `meta` | A stage that is not optional has only meta options. |
+| `omit` | A stage that is not optional has `omitUnused`, or the value of `omitUnused` is not a boolean. |
 | `unknown` | A constraint or a named config has an unknown stage, option or param. |
 | `constraint` | A named config breaks a constraint. |
 | `shape` | The `supports.shape` of an option is empty, or has a kind that is not declared. |

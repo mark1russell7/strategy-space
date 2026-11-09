@@ -1,7 +1,7 @@
 // The race of the terms (`docs/RACE.md`). The race measures the live terms on one input at a time, and drops a term that is worse than the best.
 // The test is the paired sign-flip test of `@mark1russell7/rigor-statistics`, with the Holm correction over the terms of a round.
 import { deriveSeed } from "@mark1russell7/rigor-generators";
-import { holm, signFlipTest } from "@mark1russell7/rigor-statistics";
+import { holm, mean, signFlipTest } from "@mark1russell7/rigor-statistics";
 
 /** The options of `race`. */
 export interface RaceOptions {
@@ -62,13 +62,6 @@ function whole(value: number, name: string, min: number): void {
   if (!Number.isSafeInteger(value) || value < min) throw new RangeError(`race: the ${name} ${value} is not a whole number of ${min} or more.`);
 }
 
-/** This function gives the mean of a list. */
-function meanOf(list: readonly number[]): number {
-  let s = 0;
-  for (const x of list) s += x;
-  return s / list.length;
-}
-
 /**
  * This function races terms on a set of inputs. A smaller cost is better. A cost is a finite number, for example a time or a count of crossings.
  * After `first` inputs, each round finds the best live term by its mean. It tests the paired differences of each other live term against it.
@@ -99,7 +92,7 @@ export function race(ids: readonly string[], cost: (id: string, input: number) =
     }
     k++;
     if (k < first || live.length <= keep) continue;
-    const means = live.map((id) => meanOf(costs.get(id)!));
+    const means = live.map((id) => mean(costs.get(id)!));
     let at = 0;
     for (let i = 1; i < live.length; i++) if (means[i]! < means[at]!) at = i;
     const best = live[at]!;
@@ -129,7 +122,7 @@ export function race(ids: readonly string[], cost: (id: string, input: number) =
   }
 
   const means: Record<string, number> = {};
-  for (const id of live) means[id] = meanOf(costs.get(id)!);
+  for (const id of live) means[id] = mean(costs.get(id)!);
   const order = ids.filter((id) => live.includes(id));
   const sorted = [...order].sort((a, b) => means[a]! - means[b]! || order.indexOf(a) - order.indexOf(b));
   return { best: sorted[0]!, live: sorted, means, drops, inputs: k, measured, full: ids.length * inputs };

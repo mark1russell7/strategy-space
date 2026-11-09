@@ -4,7 +4,7 @@ Layout strategies as data. A strategy space gives the stages of an engine, the o
 
 | Package | What it has |
 | --- | --- |
-| [`@mark1russell7/strategy-space`](packages/strategy-space) | The schema `strategy-space/1`, its checks, the id of a config, the count of a space, grids and seeded samples, the option schemas of a strategy, the distinctness gate, the operators, the combinators and the race of the terms |
+| [`@mark1russell7/strategy-space`](packages/strategy-space) | The schema `strategy-space/1`, its checks, the id of a config, and the count, grids and seeded samples of a space. Also the option schemas of a strategy, the distinctness gate, the operators, the combinators and the race of the terms. |
 
 [`docs/STRATEGY-SPACE.md`](docs/STRATEGY-SPACE.md) tells the schema and the rules. [`docs/ROADMAP.md`](docs/ROADMAP.md) has the plan.
 
