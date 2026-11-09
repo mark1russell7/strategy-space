@@ -1,5 +1,5 @@
 // The strategy space of an engine (`docs/STRATEGY-SPACE.md`): its stages, their options and the ranges of their params, as data.
-import { canonicalJson, fnv1a32, mulberry32, sha256Hex } from "@mark1russell7/rigor-generators";
+import { canonicalJson, fnv1a32, mulberry32, randomOf, sha256Hex } from "@mark1russell7/rigor-generators";
 import type { ClaimBreak } from "./claim.ts";
 import { holds, walkPlan, walkPoint } from "./space-walk.ts";
 
@@ -1064,14 +1064,13 @@ function gridConfigs(space: StrategySpace, levels: number, limit: number, shapes
   return out;
 }
 
-/** This function gives a random order of the numbers from 0 to `n - 1`. */
+/**
+ * This function gives a random order of the numbers from 0 to `n - 1`, with the draws of `r`.
+ * The `shuffle` of `rigor-generators` takes one draw for each item from the end, so the order of a seed does not change.
+ * The seed 0 of `randomOf` has no effect, because the function does not fork the generator.
+ */
 function permutation(n: number, r: () => number): number[] {
-  const out = Array.from({ length: n }, (_, i) => i);
-  for (let i = n - 1; i > 0; i--) {
-    const j = Math.floor(r() * (i + 1));
-    [out[i], out[j]] = [out[j]!, out[i]!];
-  }
-  return out;
+  return randomOf(r, 0).shuffle(Array.from({ length: n }, (_, i) => i));
 }
 
 /** This function gives the value of a param at the fraction `u` of its range. A sampled real number has 6 significant digits. */
