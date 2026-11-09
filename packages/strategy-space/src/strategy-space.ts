@@ -672,12 +672,38 @@ function snap(p: SpaceParam, x: number, digits: number): number {
   return p.kind === "int" ? zero(Math.round(v)) : Math.min(p.max!, Math.max(min, realForm(v, digits)));
 }
 
-/** This function gives the point at the fraction `t` of the range of a numeric param, on its scale. */
-function at01(p: SpaceParam, t: number): number {
-  const min = p.min!;
-  const max = p.max!;
-  if (p.scale === "log") return Math.exp(Math.log(min) + t * (Math.log(max) - Math.log(min)));
-  return min + t * (max - min);
+/** This function tells if a log scale of a range starts at 0 or below. Then the scale is the log of `1 + x - min`. */
+const logFromZero = (p: SpaceParam): boolean => p.scale === "log" && (p.min ?? 0) <= 0;
+
+/** This function gives the ends of the range of a numeric param. It stops with a `RangeError` for a `bool` or an `enum` param. */
+function numericRange(p: SpaceParam, fn: string): { readonly min: number; readonly max: number } {
+  if (!isNumeric(p)) throw new RangeError(`${fn} takes an int or a real param, not the ${p.kind} param ${p.name}.`);
+  const min = p.min ?? 0;
+  return { min, max: p.max ?? min };
+}
+
+/**
+ * This function gives the value at the fraction `t` of the range of a numeric param, on its scale. A `t` out of `[0, 1]` moves to the near end.
+ * A log scale with a `min` of 0 or less is the log of `1 + x - min`. The value does not go to the step of the param.
+ */
+export function paramAt(param: SpaceParam, t: number): number {
+  const { min, max } = numericRange(param, "paramAt");
+  const u = Math.min(1, Math.max(0, t));
+  let v: number;
+  if (param.scale !== "log") v = min + u * (max - min);
+  else if (logFromZero(param)) v = min + Math.expm1(u * Math.log1p(max - min));
+  else v = Math.exp(Math.log(min) + u * (Math.log(max) - Math.log(min)));
+  return Math.min(max, Math.max(min, v));
+}
+
+/** This function gives the fraction of the range of a numeric param at a value, on its scale. It is the inverse of `paramAt`. */
+export function paramUnit(param: SpaceParam, value: number): number {
+  const { min, max } = numericRange(param, "paramUnit");
+  if (max === min) return 0;
+  const v = Math.min(max, Math.max(min, value));
+  if (param.scale !== "log") return (v - min) / (max - min);
+  if (logFromZero(param)) return Math.log1p(v - min) / Math.log1p(max - min);
+  return (Math.log(v) - Math.log(min)) / (Math.log(max) - Math.log(min));
 }
 
 /**
@@ -694,7 +720,7 @@ export function paramLevels(param: SpaceParam, levels: number): ParamValue[] {
   if (steps <= levels && param.scale !== "log") {
     for (let j = 0; j < steps; j++) out.push(snap(param, param.min! + j * (param.step ?? 1), 12));
   } else {
-    for (let j = 0; j < levels; j++) out.push(snap(param, at01(param, j / (levels - 1)), 12));
+    for (let j = 0; j < levels; j++) out.push(snap(param, paramAt(param, j / (levels - 1)), 12));
   }
   return [...new Set(out)];
 }
@@ -1051,7 +1077,7 @@ function sampleValue(p: SpaceParam, u: number): ParamValue {
     const steps = Math.round((lastPoint(p) - p.min!) / (p.step ?? 1)) + 1;
     return snap(p, p.min! + Math.min(steps - 1, Math.floor(u * steps)) * (p.step ?? 1), 6);
   }
-  return snap(p, at01(p, u), 6);
+  return snap(p, paramAt(p, u), 6);
 }
 
 /** This function gives a seed of 32 bits from a seed and a step name. */

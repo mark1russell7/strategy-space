@@ -28,6 +28,7 @@ configId(space, configs[0]!); // the first 16 hex characters of a SHA-256
 | The checks | `checkSpace`, `checkConfig`, `paramProblem` |
 | The id of a config | `canonicalConfig`, `configId` |
 | The count | `spaceSize`, `paramLevels`, `spaceShapeKinds` |
+| The scale of a param | `paramAt` (the value at a fraction of the range), `paramUnit` (the fraction at a value) |
 | The configs | `enumerateSpace` (the modes `grid` and `sample`, the draws `uniform` and `walk`, fixed options) |
 | Two spaces as one | `productSpace`, `joinConfigs`, `splitConfig` |
 | The option schema of a strategy | `listOptions`, `optionDefaults`, `checkOptions`, `clampOptions`, `checkSchema` |

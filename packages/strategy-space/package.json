@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "@mark1russell7/strategy-space",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Layout strategies as data: the stages, options and parameters of a space, its checks, the id of a config, the count of the space, grids and seeded samples.",
   "keywords": [
     "strategy-space",
