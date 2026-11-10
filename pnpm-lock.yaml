@@ -167,14 +167,14 @@ importers:
   .:
     devDependencies:
       '@mark1russell7/api-report':
-        specifier: ^0.4.2
-        version: 0.4.2
+        specifier: ^0.5.3
+        version: 0.5.3
       '@mark1russell7/boundaries':
         specifier: ^0.2.1
         version: 0.2.1(@swc/core@1.16.22)(dependency-cruiser@18.7.2)
       '@mark1russell7/conventions':
-        specifier: ^0.38.4
-        version: 0.38.4
+        specifier: ^0.40.6
+        version: 0.40.6
       '@mark1russell7/cue':
         specifier: ^2.0.0
         version: 2.1.3
@@ -215,7 +215,7 @@ importers:
         specifier: ^26.6.5
         version: 26.6.6
       '@vitest/coverage-v8':
-        specifier: 5.1.0
+        specifier: ^5.0.3
         version: 5.1.0(vitest@5.1.0)
       typescript:
         specifier: ^7.0.2
@@ -243,7 +243,7 @@ importers:
         specifier: ^26.6.5
         version: 26.6.6
       '@vitest/coverage-v8':
-        specifier: 5.1.0
+        specifier: ^5.0.3
         version: 5.1.0(vitest@5.1.0)
       esbuild:
         specifier: ^0.28.2
@@ -464,8 +464,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@mark1russell7/api-report@0.4.2':
-    resolution: {integrity: sha512-D+NZYQysYxV+1xGtgI92xDC5nQqaM7LLZmpPv3isaJluE61xTYEzyQitoiq30ZNvoLm37TY1tywCb+0kdlMTug==}
+  '@mark1russell7/api-report@0.5.3':
+    resolution: {integrity: sha512-tdg5rrwp1xTd19dEtfhZ3ZxDSx07AnUWFZuNpMr9zFnUjAx5AYL238L6EFfo6HnevfKlxzQWGOmvpkFB1v80sw==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -481,8 +481,8 @@ packages:
       dependency-cruiser:
         optional: true
 
-  '@mark1russell7/conventions@0.38.4':
-    resolution: {integrity: sha512-wrZVby1T/7nVV9+Dt45w3WD0n4ZgcGIWpBgAkprIAybmrGs/M6ibH7RVC0b3SRx8wLTgkt0zq7HhEG6VewGPFw==}
+  '@mark1russell7/conventions@0.40.6':
+    resolution: {integrity: sha512-QKW7+0RketlRTVFAbPEK3TEJSj6v3JJmWuTaFV+fxI/83wdbVBedr1jNsdjplmaXWx1aEypUytsqIP7hihZDsA==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -1762,16 +1762,16 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@mark1russell7/api-report@0.4.2':
+  '@mark1russell7/api-report@0.5.3':
     dependencies:
-      '@mark1russell7/conventions': 0.38.4
+      '@mark1russell7/conventions': 0.40.6
 
   '@mark1russell7/boundaries@0.2.1(@swc/core@1.16.22)(dependency-cruiser@18.7.2)':
     optionalDependencies:
       '@swc/core': 1.16.22
       dependency-cruiser: 18.7.2
 
-  '@mark1russell7/conventions@0.38.4':
+  '@mark1russell7/conventions@0.40.6':
     dependencies:
       yaml: 2.9.1
 
