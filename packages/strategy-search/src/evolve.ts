@@ -251,7 +251,7 @@ export function evolve(space: StrategySpace, options: EvolveOptions): EvolveRun 
 
   const random = mulberry32(deriveSeed(seed, "choices"));
   // A seeded sample of n configs puts the choices of a stage in n strata. Thus a sample with fewer configs than the choices
-  // of a stage never offers its last choices, and a sample of 1 config always takes the first choice of each stage.
+  // of a stage never offers some of its choices, and a sample of 1 config always takes the first choice of each stage.
   const widest = Math.max(...space.stages.map((stage) => stage.options.length + (stage.optional === true ? 1 : 0)));
   const drawSize = Math.max(size, widest);
   let batch = 0;
