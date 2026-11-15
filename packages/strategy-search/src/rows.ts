@@ -7,8 +7,8 @@ import { GOALS, paretoRanks, type Goal } from "./pareto.ts";
 
 /**
  * This function gives the configs of a grid or of a seeded sample of a space, from `enumerateSpace`. A refusal of the
- * space or of the enumeration is a `RangeError` with the text of the refusal. `enumerateSpace` gives some refusals as a
- * plain `Error`, for example a sample that the constraints of the space empty.
+ * space or of the enumeration is a `RangeError` with the text of the refusal. `enumerateSpace` gives a refusal of the
+ * enumeration as a `RangeError`, but a space with a break of `checkSpace` gets a plain `Error`.
  *
  * @param space - The strategy space
  * @param options - The grid or the sample

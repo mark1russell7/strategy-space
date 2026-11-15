@@ -134,8 +134,10 @@ With `{ shapes }`, it also finds `shape`: a chosen option that does not support 
 
 - The mode `grid` gives each grid point without a meta option, in a stable order. A grid of more than `limit` configs (default 100000) causes a `RangeError`.
 - The mode `sample` gives `n` configs of a seeded Latin hypercube. The options of a stage get equal strata. Each active param gets its own strata among the configs that use it.
+- A stage with more options than `n` has 2 or more options in a stratum. A draw selects one of them. Thus each option can come into a sample, also a sample of 1 config.
+- A stage with `n` or fewer options has 1 option in each stratum, and takes no draw. Its sample is the same as in 0.0.7.
 - A sample is deterministic for its seed.
-- A sample draws again when a config breaks a constraint. After `maxTries` draws, it throws an `Error`.
+- A sample draws again when a config breaks a constraint. After `maxTries` draws, it throws a `RangeError`.
 - The option `meta` is `skip` by default, so a sample has no meta option. With `sample`, a meta option draws its members from a base sample of its part.
 - A meta option with a `pool` draws one entry of its `pool`. The entries get equal strata.
 
@@ -152,6 +154,7 @@ A sample of `enumerateSpace` draws each stage alone, and it draws again when a p
 The option `draw: "walk"` gets the sample of such a space. A point draws its stages from the largest to the smallest. Each stage draws only from the options that keep the constraints with the stages before it.
 
 - The largest stage keeps its equal strata. A smaller stage has equal strata only over the options that stay open.
+- When more options stay open than `n`, a draw selects one option of the stratum, as in the default draw.
 - A point can still fail when a rule asks for an option that another rule refuses. It then draws again and counts against `maxTries`.
 - The default stays `reject`, so a seeded sample of each current user does not change. The two values give different configs for one seed.
 - A member list of a meta option draws its pool with the same draw.

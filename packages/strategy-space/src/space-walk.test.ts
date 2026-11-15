@@ -1,5 +1,6 @@
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { fitsWalk, walkPlan, walkPoint } from "./space-walk.ts";
+import { fitsWalk, stratumChoice, walkPlan, walkPoint } from "./space-walk.ts";
 import { checkConfig, STRATEGY_SPACE_SCHEMA, type SpaceStage, type StrategySpace } from "./strategy-space.ts";
 
 // 40 routers. Each router permits its own 2 options of each stage of 12. These options have no params, so a break of a constraint is the only reason that checkConfig can give.
@@ -25,11 +26,16 @@ const lists = space.stages.map((s) => [...s.options, ...(s.optional ? [null] : [
 // Under the fault, the open list of `a` for `r0` is a0, a1, a5 and null. The stratum 60 of 120 reads its third entry, so these rows read a5.
 const picks = space.stages.map((s) => Array.from({ length: N }, (_, i) => (s.name === "a" ? (i + 60) % N : i)));
 
+// Each stage has fewer options than N, so each stratum has 1 option and the walk takes no draw.
+const noDraw = (): number => {
+  throw new Error("A stratum with 1 option took a draw.");
+};
+
 /** This function gives the reasons of `checkConfig` for each point of the walk that has a reason. */
 function breaks(fits: typeof fitsWalk): string[] {
   const plan = walkPlan(space.stages, lists, space.constraints ?? [], N);
   return Array.from({ length: N }, (_, i) => {
-    const stages = Object.fromEntries([...walkPoint(plan, picks, i, fits)].map(([stage, o]) => [stage, o === null ? null : { option: o.id, params: {} }]));
+    const stages = Object.fromEntries([...walkPoint(plan, picks, i, noDraw, fits)].map(([stage, o]) => [stage, o === null ? null : { option: o.id, params: {} }]));
     return checkConfig(space, { space: space.engine, stages }).map((b) => b.detail);
   }).flat();
 }
@@ -52,5 +58,38 @@ describe("walkPlan", () => {
   it("orders the stages from the largest, and keeps the order of the space for equal sizes", () => {
     const plan = walkPlan(space.stages, lists, space.constraints ?? [], N);
     expect(plan.order).toEqual([1, 0, 2]);
+  });
+});
+
+describe("stratumChoice", () => {
+  // A count n of strata, and a list of n or more options.
+  const sizes = fc.integer({ min: 1, max: 40 }).chain((n) => fc.tuple(fc.constant(n), fc.integer({ min: n, max: 3 * n + 5 })));
+
+  it("takes no draw and gives the first option of the stratum when the list has n or fewer options", () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 1, max: 40 }).chain((n) => fc.tuple(fc.constant(n), fc.integer({ min: 0, max: n }))), ([n, len]) => {
+        for (let p = 0; p < n; p++) expect(stratumChoice(p, len, n, noDraw)).toBe(Math.floor((p * len) / n));
+      }),
+      { seed: 20261115, numRuns: 200 },
+    );
+  });
+
+  it("splits a list of n or more options into n ranges that cover each option one time, and gives an option of the range of p", () => {
+    fc.assert(
+      fc.property(sizes, fc.double({ min: 0, max: 1, maxExcluded: true, noNaN: true }), ([n, len], u) => {
+        const ranges = Array.from({ length: n }, (_, p) => [stratumChoice(p, len, n, () => 0), stratumChoice(p, len, n, () => 1 - Number.EPSILON)] as const);
+        // The ranges follow one another from 0 to len - 1, without a gap or an overlap.
+        expect(ranges[0]![0]).toBe(0);
+        expect(ranges[n - 1]![1]).toBe(len - 1);
+        for (let p = 1; p < n; p++) expect(ranges[p]![0]).toBe(ranges[p - 1]![1] + 1);
+        // Each draw gives an option of the range of its stratum.
+        for (let p = 0; p < n; p++) {
+          const i = stratumChoice(p, len, n, () => u);
+          expect(i).toBeGreaterThanOrEqual(ranges[p]![0]);
+          expect(i).toBeLessThanOrEqual(ranges[p]![1]);
+        }
+      }),
+      { seed: 20261115, numRuns: 300 },
+    );
   });
 });

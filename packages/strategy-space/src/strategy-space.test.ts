@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { canonicalJson } from "@mark1russell7/rigor-generators";
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
   canonicalConfig,
@@ -513,6 +514,110 @@ describe("the walk draw of a sample", () => {
   });
 });
 
+describe("a sample with fewer configs than the options of a stage (0.1.0)", () => {
+  /** A space with a stage of `count` options, an optional stage and a stage with a param. */
+  const wide = (count: number): StrategySpace => ({
+    schema: STRATEGY_SPACE_SCHEMA,
+    engine: "wide",
+    version: "1",
+    stages: [
+      { name: "pick", options: Array.from({ length: count }, (_, i) => ({ id: `p${i}`, params: [] })) },
+      { name: "side", optional: true, options: [{ id: "left", params: [] }] },
+      { name: "size", options: [{ id: "n", params: [{ name: "count", kind: "int", min: 1, max: 4, default: 1 }] }] },
+    ],
+  });
+  const optionsOf = (sample: readonly StrategyConfig[], stage: string): Set<string> => new Set(sample.map((c) => c.stages[stage]?.option ?? "none"));
+
+  it("gives each option of a stage over the seeds, also when the stage has more options than n", () => {
+    // Up to 0.0.7, the stratum p took only the option floor(p * count / n). With 6 options and n = 2, the options p1, p2, p4 and p5 never came.
+    fc.assert(
+      fc.property(fc.integer({ min: 2, max: 12 }).chain((count) => fc.tuple(fc.constant(count), fc.integer({ min: 1, max: count - 1 }))), fc.constantFrom("reject" as const, "walk" as const), ([count, n], draw) => {
+        const seen = new Set<string>();
+        for (let seed = 1; seed <= 200 && seen.size < count; seed++) for (const id of optionsOf(enumerateSpace(wide(count), { mode: "sample", n, seed, draw }), "pick")) seen.add(id);
+        expect(seen.size).toBe(count);
+      }),
+      { seed: 20261115, numRuns: 40 },
+    );
+  });
+
+  it("gives one option of each stratum in a sample, and each option of a stratum over the seeds", () => {
+    // With 6 options and n = 2, the first stratum has p0, p1 and p2, and the second stratum has p3, p4 and p5. Up to 0.0.7, only p0 and p3 came.
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 30; seed++) {
+      const ids = enumerateSpace(wide(6), { mode: "sample", n: 2, seed }).map((c) => Number(c.stages["pick"]!.option.slice(1)));
+      expect(ids.map((i) => Math.floor(i / 3)).sort()).toEqual([0, 1]);
+      for (const i of ids) seen.add(i);
+    }
+    expect([...seen].sort()).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it("gives a sample of 1 config on a space whose first options break a constraint", () => {
+    // The config with the first option of each stage breaks the constraint. Up to 0.0.7, n = 1 took only that config, and the sample threw after 1000 tries.
+    const tight: StrategySpace = {
+      schema: STRATEGY_SPACE_SCHEMA,
+      engine: "tight",
+      version: "1",
+      stages: ["b0", "b1"].map((name) => ({ name, options: [{ id: "0", params: [] }, { id: "1", params: [] }] })),
+      constraints: [{ if: { stage: "b0", option: "0" }, then: { stage: "b1", option: "1" } }],
+    };
+    const seen = new Set<string>();
+    fc.assert(
+      fc.property(fc.integer({ min: -(2 ** 31), max: 2 ** 31 - 1 }), (seed) => {
+        const sample = enumerateSpace(tight, { mode: "sample", n: 1, seed });
+        expect(sample).toHaveLength(1);
+        expect(checkConfig(tight, sample[0]!)).toEqual([]);
+        seen.add(`${sample[0]!.stages["b0"]!.option}${sample[0]!.stages["b1"]!.option}`);
+      }),
+      { seed: 20261115, numRuns: 100 },
+    );
+    // Each of the 3 configs that keep the constraint comes.
+    expect([...seen].sort()).toEqual(["01", "10", "11"]);
+  });
+
+  it("gives the samples of 0.0.7 when each stage has n or fewer options", () => {
+    // These literal samples come from strategy-space 0.0.7. A stratum with 1 option takes no draw, so they do not change.
+    expect(enumerateSpace(route, { mode: "sample", n: 3, seed: 1 })).toEqual([
+      { space: "route", stages: { grouping: null, lanes: { option: "bundle", params: {} }, routing: { option: "shared", params: { margin: 8.6043 } } } },
+      { space: "route", stages: { grouping: { option: "rule", params: {} }, lanes: { option: "run", params: {} }, routing: { option: "shared", params: { margin: 19.1525 } } } },
+      { space: "route", stages: { grouping: { option: "rule", params: {} }, lanes: { option: "bundle", params: {} }, routing: { option: "shared", params: { margin: 1.20183 } } } },
+    ]);
+    const four: StrategySpace = {
+      schema: STRATEGY_SPACE_SCHEMA,
+      engine: "four",
+      version: "1",
+      stages: [
+        { name: "s", options: ["s0", "s1", "s2", "s3"].map((id) => ({ id, params: [] })) },
+        { name: "t", optional: true, options: [{ id: "t0", params: [{ name: "k", kind: "int", min: 1, max: 9, default: 1 }] }] },
+      ],
+      constraints: [{ if: { stage: "s", option: "s0" }, then: { stage: "t", option: "t0" } }],
+    };
+    const want: StrategyConfig[] = [
+      { space: "four", stages: { s: { option: "s3", params: {} }, t: null } },
+      { space: "four", stages: { s: { option: "s1", params: {} }, t: { option: "t0", params: { k: 9 } } } },
+      { space: "four", stages: { s: { option: "s2", params: {} }, t: null } },
+      { space: "four", stages: { s: { option: "s0", params: {} }, t: { option: "t0", params: { k: 3 } } } },
+    ];
+    expect(enumerateSpace(four, { mode: "sample", n: 4, seed: 5 })).toEqual(want);
+    expect(enumerateSpace(four, { mode: "sample", n: 4, seed: 5, draw: "walk" })).toEqual(want);
+  });
+
+  it("throws a RangeError when the constraints remove too many points, with each draw", () => {
+    const closed: StrategySpace = {
+      ...wide(3),
+      constraints: [
+        { if: { stage: "pick", option: "p0" }, then: { stage: "pick", option: "p1" } },
+        { if: { stage: "pick", option: "p1" }, then: { stage: "pick", option: "p2" } },
+        { if: { stage: "pick", option: "p2" }, then: { stage: "pick", option: "p0" } },
+      ],
+    };
+    for (const draw of ["reject", "walk"] as const) {
+      const sampling = (): unknown => enumerateSpace(closed, { mode: "sample", n: 2, seed: 1, draw, maxTries: 20 });
+      expect(sampling).toThrow(RangeError);
+      expect(sampling).toThrow(/remove too many points: 0 of 2 configs after 20 tries\./);
+    }
+  });
+});
+
 describe("productSpace", () => {
   const joint = productSpace(pack, route, "joint");
 
@@ -950,60 +1055,16 @@ describe("a sample with a shape filter (layout-contract 0.2.17)", () => {
   };
   const threwIn = (list: readonly string[], run: Run): boolean => list.includes(run.key) || list.includes(`${run.group}/*`);
 
-  it("gives the samples of 0.2.16 byte for byte for each run that 0.2.16 completed", () => {
-    // The code of layout-contract 0.2.16 gave these pins: the count of the completed runs, the SHA-256 of their samples, and the runs that threw.
-    // A run with n = 1 and the option skip draws the first option of each stage in each round, so a constraint on that option throws for shaped and pooled.
-    const PINS_0_2_16: Readonly<Record<string, { readonly done: string; readonly threw: readonly string[] }>> = {
-      pack: { done: "72:964f5a1e6a059d72", threw: [] },
-      route: { done: "72:798cff91671ff7b8", threw: [] },
-      joint: { done: "72:63c9b13de727abc3", threw: [] },
-      shaped: {
-        done: "44:9097d25dab8f14de",
-        threw: ["polygon/skip/*", "polygon/sample/*", "circle/skip/1/1", "circle/skip/2/1", "free/skip/*", "free/sample/*", "rect+circle/skip/1/1", "rect+circle/skip/2/1"],
-      },
-      rectOnly: {
-        done: "24:628909e64f6ed175",
-        threw: ["polygon/skip/*", "polygon/sample/*", "circle/skip/*", "circle/sample/*", "free/skip/*", "free/sample/*", "rect+circle/skip/*", "rect+circle/sample/*"],
-      },
-      bounds: { done: "48:943e118883d2a2e5", threw: ["polygon/skip/*", "circle/skip/*", "free/skip/*", "rect+circle/skip/*"] },
-      twoMeta: {
-        done: "32:afdf82edad9da223",
-        threw: [
-          "polygon/skip/*",
-          "polygon/sample/1/3",
-          "polygon/sample/1/17",
-          "polygon/sample/2/3",
-          "polygon/sample/2/17",
-          "circle/skip/*",
-          "circle/sample/1/3",
-          "circle/sample/1/17",
-          "circle/sample/2/3",
-          "circle/sample/2/17",
-          "free/skip/*",
-          "free/sample/1/3",
-          "free/sample/1/17",
-          "free/sample/2/3",
-          "free/sample/2/17",
-          "rect+circle/skip/*",
-          "rect+circle/sample/1/3",
-          "rect+circle/sample/1/17",
-          "rect+circle/sample/2/3",
-          "rect+circle/sample/2/17",
-        ],
-      },
-      pooled: {
-        done: "44:182754e9cb2e9ccc",
-        threw: ["polygon/skip/*", "polygon/sample/*", "circle/skip/1/1", "circle/skip/2/1", "free/skip/*", "free/sample/*", "rect+circle/skip/1/1", "rect+circle/skip/2/1"],
-      },
-    };
+  /** This function gives, for each space, the count and the SHA-256 of the samples of the runs that `take` selects and `skips` does not list, and the runs that threw. */
+  const pinsOf = (take: (run: Run) => boolean, skips: Readonly<Record<string, readonly string[]>>): Record<string, { done: string; threw: string[] }> => {
     const got: Record<string, { done: string; threw: string[] }> = {};
     for (const [name, space] of Object.entries(spaces)) {
-      const skip = PINS_0_2_16[name]?.threw ?? [];
+      const skip = skips[name] ?? [];
       const hash = createHash("sha256");
       let done = 0;
       const threw: string[] = [];
       for (const run of runs) {
-        if (threwIn(skip, run)) continue;
+        if (!take(run) || threwIn(skip, run)) continue;
         let sample: StrategyConfig[];
         try {
           sample = enumerateSpace(space, run.options);
@@ -1016,9 +1077,71 @@ describe("a sample with a shape filter (layout-contract 0.2.17)", () => {
       }
       got[name] = { done: `${done}:${hash.digest("hex").slice(0, 16)}`, threw: short(threw) };
     }
-    // Each run that 0.2.16 completed gives the same samples, and none of them throws.
-    const want = Object.fromEntries(Object.entries(PINS_0_2_16).map(([k, p]) => [k, { done: p.done, threw: [] }]));
-    expect(got).toEqual(want);
+    return got;
+  };
+
+  // The runs that 0.2.16 refused. A key with `/*` names a group without a config for its shape kinds.
+  const THREW_0_2_16: Readonly<Record<string, readonly string[]>> = {
+    shaped: ["polygon/skip/*", "polygon/sample/*", "circle/skip/1/1", "circle/skip/2/1", "free/skip/*", "free/sample/*", "rect+circle/skip/1/1", "rect+circle/skip/2/1"],
+    rectOnly: ["polygon/skip/*", "polygon/sample/*", "circle/skip/*", "circle/sample/*", "free/skip/*", "free/sample/*", "rect+circle/skip/*", "rect+circle/sample/*"],
+    bounds: ["polygon/skip/*", "circle/skip/*", "free/skip/*", "rect+circle/skip/*"],
+    twoMeta: [
+      "polygon/skip/*",
+      "polygon/sample/1/3",
+      "polygon/sample/1/17",
+      "polygon/sample/2/3",
+      "polygon/sample/2/17",
+      "circle/skip/*",
+      "circle/sample/1/3",
+      "circle/sample/1/17",
+      "circle/sample/2/3",
+      "circle/sample/2/17",
+      "free/skip/*",
+      "free/sample/1/3",
+      "free/sample/1/17",
+      "free/sample/2/3",
+      "free/sample/2/17",
+      "rect+circle/skip/*",
+      "rect+circle/sample/1/3",
+      "rect+circle/sample/1/17",
+      "rect+circle/sample/2/3",
+      "rect+circle/sample/2/17",
+    ],
+    pooled: ["polygon/skip/*", "polygon/sample/*", "circle/skip/1/1", "circle/skip/2/1", "free/skip/*", "free/sample/*", "rect+circle/skip/1/1", "rect+circle/skip/2/1"],
+  };
+
+  it("gives the samples of 0.2.16 byte for byte for each run with n = 3 or 17, as each stage has 3 or fewer options", () => {
+    // The code of layout-contract 0.2.16 gave the samples of these runs, and strategy-space 0.0.7 gave the same bytes. The pins are the count of the completed runs and the SHA-256 of their samples.
+    const PINS: Readonly<Record<string, string>> = {
+      pack: "48:8db6ce66b388f3d0",
+      route: "48:93b40c5c124d8839",
+      joint: "48:42423dd4886fbef5",
+      shaped: "32:e79dc1b851c61916",
+      rectOnly: "16:d6bf2f49f04b8d73",
+      bounds: "32:f3be8244d174c7d3",
+      twoMeta: "16:d38d0ff62af7c26b",
+      pooled: "32:dcfe845efeb5bea0",
+    };
+    const want = Object.fromEntries(Object.entries(PINS).map(([k, done]) => [k, { done, threw: [] }]));
+    expect(pinsOf((run) => run.options.n >= 3, THREW_0_2_16)).toEqual(want);
+  });
+
+  it("gives the pinned samples of 0.1.0 for each run with n = 1, and completes the runs that 0.2.16 refused only for its first options", () => {
+    // Up to 0.0.7, a run with n = 1 took the first option of each stage in each round. A constraint on these options made shaped and pooled throw for circle and rect+circle.
+    // Now a stage with 2 or more options draws one option of its stratum. Thus only the groups without a config for their shape kinds stay out.
+    const groups = Object.fromEntries(Object.entries(THREW_0_2_16).map(([k, list]) => [k, list.filter((key) => key.endsWith("/*"))]));
+    const PINS: Readonly<Record<string, string>> = {
+      pack: "24:fa50083677417ff6",
+      route: "24:8ede8faaaafcc305",
+      joint: "24:8b8634cb459216e6",
+      shaped: "16:15f2f86a9370c17e",
+      rectOnly: "8:e3d97e0c819c15e3",
+      bounds: "16:9aa8a5354edcfc47",
+      twoMeta: "16:2f38bce760611397",
+      pooled: "16:f961b35ff32bf1aa",
+    };
+    const want = Object.fromEntries(Object.entries(PINS).map(([k, done]) => [k, { done, threw: [] }]));
+    expect(pinsOf((run) => run.options.n === 1, groups)).toEqual(want);
   });
 
   it("skips a meta option without a member list, as spaceSize gives it 0", () => {

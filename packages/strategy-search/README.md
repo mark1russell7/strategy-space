@@ -52,7 +52,7 @@ frontOf(run); // the rows of the Pareto front, each with its config
 
 `evolve` is NSGA-II (Deb and others, 2002) with the constrained dominance of Deb (2000). Use it when a space is too large for a grid, and a sample finds few good configs.
 
-1. The first population comes from a seeded sample of the space. Each sample of a run has at least the size of the population, and at least the count of the choices of the widest stage. Thus each choice can come into the run.
+1. The first population comes from a seeded sample of the space. Each sample of a run has the size of the population. A sample can give each choice of a stage, also of a stage with more choices than the population.
 2. A tournament of two picks each parent. The better parent wins.
 3. Two parents mix their stages. Each stage of a child comes from one parent, and the second child gets the other parent.
 4. A child takes the choice of a sampled config at some stages. Thus a new choice keeps the ranges of the params.
