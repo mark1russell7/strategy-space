@@ -51,4 +51,6 @@ spaceSize(space, { levels: 3, shapes: ["circle"], kinds: ["rect", "circle"] });
 
 ## The same ids as `layout-contract`
 
-The schema, the ids and the samples come from `layout-contract` 0.6.1 with no change. A config has the same `configId`, and a seed gives the same sample. The hash and the random numbers come from `@mark1russell7/rigor-generators`.
+The schema, the ids and the samples come from `layout-contract` 0.6.1. A config has the same `configId`. The hash and the random numbers come from `@mark1russell7/rigor-generators`.
+
+A seed gives the same sample when each stage has `n` or fewer options. Since 0.1.0, a stage with more options than `n` draws one option in each stratum. Thus each option can come into a sample, and the samples of such a stage are different.

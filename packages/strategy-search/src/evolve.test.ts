@@ -1,5 +1,5 @@
 import { seedOf } from "@mark1russell7/rigor-generators";
-import { checkConfig, STRATEGY_SPACE_SCHEMA, type StrategyConfig, type StrategySpace } from "@mark1russell7/strategy-space";
+import { checkConfig, checkSpace, STRATEGY_SPACE_SCHEMA, type StrategyConfig, type StrategySpace } from "@mark1russell7/strategy-space";
 import { describe, expect, it } from "vitest";
 import { evolve, evolveProblems, type EvolveOptions } from "./evolve.ts";
 import { frontOf, sweep, type Measure, type Objective } from "./index.ts";
@@ -270,5 +270,17 @@ describe("the samples of a run", () => {
     const sweeping = (): unknown => sweep(closed, { objectives: ones, evaluate: countOnes, enumerate: { mode: "sample", n: 4, seed: 1, maxTries: 50 } });
     expect(sweeping).toThrow(RangeError);
     expect(sweeping).toThrow(/remove too many points/);
+  });
+
+  it("gives a RangeError with the text of strategy-space for a space that checkSpace refuses", () => {
+    // enumerateSpace gives a plain Error for a bad space. Thus drawConfigs stays: it makes that refusal a RangeError.
+    const twice: StrategySpace = { ...bits(2), engine: "twice", stages: [...bits(2).stages, ...bits(1).stages] };
+    expect(checkSpace(twice)).not.toEqual([]);
+    const evolving = (): unknown => evolve(twice, { objectives: ones, evaluate: countOnes, seed: 1, evaluations: 10, population: 2 });
+    expect(evolving).toThrow(RangeError);
+    expect(evolving).toThrow(/The space twice is not good/);
+    const sweeping = (): unknown => sweep(twice, { objectives: ones, evaluate: countOnes, enumerate: { mode: "sample", n: 4, seed: 1 } });
+    expect(sweeping).toThrow(RangeError);
+    expect(sweeping).toThrow(/The space twice is not good/);
   });
 });
