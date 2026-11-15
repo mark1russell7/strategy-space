@@ -2,7 +2,27 @@
  * The parts that each search shares: the objectives, the measure of a config and the rows of a run. A sweep and a genetic
  * search make their rows with these functions. Thus a row has one meaning in each run, and two runs compare row for row.
  */
+import { enumerateSpace, type EnumerateOptions, type StrategyConfig, type StrategySpace } from "@mark1russell7/strategy-space";
 import { GOALS, paretoRanks, type Goal } from "./pareto.ts";
+
+/**
+ * This function gives the configs of a grid or of a seeded sample of a space, from `enumerateSpace`. A refusal of the
+ * space or of the enumeration is a `RangeError` with the text of the refusal. `enumerateSpace` gives some refusals as a
+ * plain `Error`, for example a sample that the constraints of the space empty.
+ *
+ * @param space - The strategy space
+ * @param options - The grid or the sample
+ * @returns The configs
+ * @throws RangeError when `enumerateSpace` refuses the space or the enumeration
+ */
+export function drawConfigs(space: StrategySpace, options: EnumerateOptions): StrategyConfig[] {
+  try {
+    return enumerateSpace(space, options);
+  } catch (error) {
+    if (error instanceof Error && error.constructor === Error) throw new RangeError(error.message, { cause: error });
+    throw error;
+  }
+}
 
 /** The schema of the record of a run. */
 export const STRATEGY_SEARCH_SCHEMA = "strategy-search/1";

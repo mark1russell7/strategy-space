@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "@mark1russell7/strategy-search",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A search over a strategy space: sweeps and a genetic search (NSGA-II) with a seed, hard constraints, many objectives, Pareto fronts, and one plain row for each evaluation.",
   "keywords": [
     "strategy-space",
