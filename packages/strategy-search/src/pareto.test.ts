@@ -1,6 +1,6 @@
 import { mulberry32 } from "@mark1russell7/rigor-generators";
 import { describe, expect, it } from "vitest";
-import { dominates, isRead, paretoRanks, type Goal } from "./pareto.ts";
+import { crowdingDistances, dominates, isRead, paretoRanks, type Goal } from "./pareto.ts";
 
 const MIN2: Goal[] = ["min", "min"];
 
@@ -91,5 +91,46 @@ describe("the input checks", () => {
   it("refuses a point with another count of values than the goals", () => {
     expect(() => dominates([1, 2], [2], MIN2)).toThrow(RangeError);
     expect(() => paretoRanks([[1, 2, 3]], MIN2)).toThrow("The point has 3 values, and the goals have 2.");
+  });
+});
+
+describe("the crowding distance", () => {
+  it("gives each end of each objective Infinity, and each other point the gap of its neighbours over the range", () => {
+    // On the first objective the order is 0, 1, 2, 3 with the range 6. On the second objective the order is 3, 2, 1, 0 with the range 6.
+    const points = [
+      [0, 6],
+      [1, 4],
+      [3, 1],
+      [6, 0],
+    ];
+    const distances = crowdingDistances(points);
+    expect(distances[0]).toBe(Infinity);
+    expect(distances[3]).toBe(Infinity);
+    expect(distances[1]).toBeCloseTo((3 - 0) / 6 + (6 - 1) / 6, 12);
+    expect(distances[2]).toBeCloseTo((6 - 1) / 6 + (4 - 0) / 6, 12);
+  });
+
+  it("adds nothing for an objective with one value for each point", () => {
+    expect(crowdingDistances([[1, 5], [2, 5], [4, 5]])).toEqual([Infinity, 1, Infinity]);
+    expect(crowdingDistances([[5], [5]])).toEqual([0, 0]);
+  });
+
+  it("gives an empty list for no points, and 0 for one point", () => {
+    expect(crowdingDistances([])).toEqual([]);
+    expect(crowdingDistances([[3, 4]])).toEqual([0]);
+  });
+
+  it("gives each point the same distance when the points change their order, for distinct values", () => {
+    const random = mulberry32(11);
+    const points = Array.from({ length: 30 }, () => [random(), random(), random()]);
+    const order = points.map((_, i) => i).reverse();
+    const forward = crowdingDistances(points);
+    const backward = crowdingDistances(order.map((i) => points[i] as number[]));
+    for (const [j, i] of order.entries()) expect(backward[j]).toBe(forward[i]);
+  });
+
+  it("refuses points with different counts of values, and a value that is not a finite number", () => {
+    expect(() => crowdingDistances([[1, 2], [3]])).toThrow(RangeError);
+    expect(() => crowdingDistances([[1, Number.NaN]])).toThrow(RangeError);
   });
 });

@@ -1,16 +1,21 @@
-export { dominates, GOALS, isRead, paretoRanks, type Goal } from "./pareto.ts";
 export {
-  frontOf,
+  evolve,
+  EVOLVE_DEFAULTS,
+  evolveProblems,
+  type EvolveOptions,
+  type EvolveRow,
+  type EvolveRun,
+  type EvolveSample,
+  type EvolveStop,
+} from "./evolve.ts";
+export { crowdingDistances, dominates, GOALS, isRead, paretoRanks, type Goal } from "./pareto.ts";
+export {
   objectiveProblems,
   STRATEGY_SEARCH_SCHEMA,
-  sweep,
   type EvaluationRow,
-  type FrontEntry,
   type Measure,
   type Objective,
   type RowStatus,
   type SweepCounts,
-  type SweepOptions,
-  type SweepRun,
-  type SweepSample,
-} from "./sweep.ts";
+} from "./rows.ts";
+export { frontOf, sweep, type FrontEntry, type RunRows, type SweepOptions, type SweepRun, type SweepSample } from "./sweep.ts";

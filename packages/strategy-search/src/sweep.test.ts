@@ -1,7 +1,8 @@
 import { seedOf } from "@mark1russell7/rigor-generators";
 import { STRATEGY_SPACE_SCHEMA, configId, type StrategyConfig, type StrategySpace } from "@mark1russell7/strategy-space";
 import { describe, expect, it } from "vitest";
-import { frontOf, objectiveProblems, STRATEGY_SEARCH_SCHEMA, sweep, type Measure, type Objective } from "./sweep.ts";
+import { objectiveProblems, STRATEGY_SEARCH_SCHEMA, type Measure, type Objective } from "./rows.ts";
+import { frontOf, sweep } from "./sweep.ts";
 
 const space: StrategySpace = {
   schema: STRATEGY_SPACE_SCHEMA,
