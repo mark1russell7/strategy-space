@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "@mark1russell7/strategy-space",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Layout strategies as data: the stages, options and parameters of a space, its checks, the id of a config, the count of the space, grids and seeded samples.",
   "keywords": [
     "strategy-space",
@@ -53,7 +53,7 @@
   },
   "dependencies": {
     "@mark1russell7/rigor-generators": "^0.1.8",
-    "@mark1russell7/rigor-statistics": "^0.1.23"
+    "@mark1russell7/rigor-statistics": "^0.2.0"
   },
   "devDependencies": {
     "@mark1russell7/cue": "^2.0.0",
