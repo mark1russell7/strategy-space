@@ -1,3 +1,5 @@
+@import "@mark1russell7/site-pages/demo.css";
+
 :root {
   --page: #fbfbfa;
   --panel: #f0f0ed;
@@ -54,7 +56,7 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1rem;
-  max-width: 44rem;
+  max-width: 52rem;
   margin: 0 auto;
   padding: 1rem;
 }
@@ -73,7 +75,7 @@ nav {
 }
 
 main {
-  max-width: 44rem;
+  max-width: 52rem;
   margin: 0 auto;
   padding: 1rem 1rem 3rem;
 }
@@ -124,4 +126,485 @@ button {
   color: var(--ink);
   font: inherit;
   cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--quiet);
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.lead code,
+p code,
+li code,
+dd code,
+td code,
+.sp-verdict code {
+  padding: 0 0.2em;
+  border-radius: 0.25rem;
+  background: var(--panel);
+}
+
+h3 {
+  margin: 1.75rem 0 0.25rem;
+  font-size: 1rem;
+}
+
+/* The four doors of the page: one link to each demo. */
+.doors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.5rem;
+  margin: 1.5rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.doors a {
+  display: block;
+  height: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.doors a:hover {
+  border-color: var(--link);
+}
+
+.doors b {
+  display: block;
+}
+
+/* The demos: a demo has an h2 as its title. */
+.sp-demo > h2 {
+  margin-top: 0;
+}
+
+.sp-demo .sp-field select {
+  min-height: 2.5rem;
+}
+
+.sp-field textarea {
+  font: 0.8rem/1.45 ui-monospace, Consolas, monospace;
+}
+
+.settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
+  gap: 0 0.75rem;
+}
+
+.settings [hidden] {
+  display: none;
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+}
+
+.check {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.check input {
+  flex: none;
+  accent-color: var(--link);
+}
+
+.summary {
+  margin: 0.75rem 0 0.25rem;
+}
+
+.problems {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.tag {
+  flex: none;
+  margin-left: 0.5rem;
+  padding: 0 0.4em;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  color: var(--quiet);
+  font: 0.72rem/1.5 system-ui, sans-serif;
+}
+
+/* The facts of a demo: a name, then its value. */
+.facts {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: 0.375rem 1rem;
+  margin: 0.75rem 0 0;
+}
+
+.facts dt {
+  color: var(--quiet);
+}
+
+.facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* On a phone, each value goes under its name. */
+@media (max-width: 30rem) {
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .facts dd {
+    margin-bottom: 0.375rem;
+  }
+}
+
+/* 1. The stages of a space, side by side, with the count of each option. */
+.stages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--page);
+}
+
+.stage-name {
+  margin: 0 0 0.25rem;
+  font-weight: 650;
+}
+
+.stage ul {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.stage li,
+.stage-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.stage .none {
+  color: var(--quiet);
+  font-style: italic;
+}
+
+.times {
+  color: var(--quiet);
+  font-variant-numeric: tabular-nums;
+}
+
+.stage-total {
+  margin: 0.375rem 0 0;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--line);
+  color: var(--quiet);
+  font-size: 0.875rem;
+}
+
+.stage-total b {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.sum {
+  margin: 0.75rem 0 0;
+}
+
+.sum .total {
+  padding: 0 0.3em;
+  border-radius: 0.25rem;
+  background: var(--sp-hit);
+}
+
+/* 2. The table of the configs. It scrolls on a narrow screen, and the page does not. */
+.scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.configs {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.configs th,
+.configs td {
+  padding: 0.125rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.configs th {
+  color: var(--quiet);
+  font-weight: 400;
+}
+
+.configs code {
+  font-size: 0.8rem;
+}
+
+.configs .n,
+.configs .none {
+  color: var(--quiet);
+}
+
+/* On a phone, each config is a block with a label on each line, so the table needs no scroll. */
+@media (max-width: 40rem) {
+  .configs thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .configs,
+  .configs tbody,
+  .configs tr,
+  .configs td {
+    display: block;
+  }
+
+  .configs tr {
+    padding: 0.375rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .configs td {
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .configs td::before {
+    content: attr(data-label) ": ";
+    color: var(--quiet);
+  }
+
+  .configs td.n {
+    float: right;
+  }
+}
+
+/* 2. The bars of the shares: one bar for each draw. */
+.share-stage {
+  max-width: 18rem;
+}
+
+.shares {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.share {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+  gap: 0.125rem 0.75rem;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.share-name {
+  grid-row: span 2;
+  overflow-wrap: anywhere;
+}
+
+.bar {
+  position: relative;
+  min-height: 1.25rem;
+  border-radius: 0.25rem;
+  background: linear-gradient(to right, var(--bar) var(--share), transparent var(--share));
+}
+
+.bar > span {
+  position: relative;
+  padding: 0 0.375rem;
+  white-space: nowrap;
+}
+
+.bar.reject {
+  --bar: var(--reject);
+}
+
+.bar.walk {
+  --bar: var(--walk);
+}
+
+:root {
+  --reject: #c9d8f2;
+  --walk: #f2dcb3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --reject: #2c4166;
+    --walk: #5c4520;
+  }
+}
+
+:root[data-theme="dark"] {
+  --reject: #2c4166;
+  --walk: #5c4520;
+}
+
+/* 3. The id of each config. */
+.sp-cards.two {
+  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+  margin-top: 0.75rem;
+}
+
+.sp-card .call {
+  margin: 0;
+  color: var(--quiet);
+  font-size: 0.85rem;
+}
+
+.sp-card .answer {
+  margin: 0.25rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.sp-card .answer code {
+  padding: 0;
+  background: none;
+}
+
+.sp-card .missing {
+  color: var(--sp-fail);
+}
+
+.sp-card .canonical {
+  margin: 0.375rem 0 0;
+  color: var(--quiet);
+  font-size: 0.8rem;
+}
+
+.sp-card .canonical code {
+  font-size: 0.75rem;
+}
+
+/* 4. The lanes of the race: one cell for each input. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0.5rem 0;
+  padding: 0;
+  color: var(--quiet);
+  font-size: 0.8rem;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.legend .cell {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.lanes {
+  display: grid;
+  gap: 0.625rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lane-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.75rem;
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+}
+
+.lane-head .gap,
+.lane-head .state {
+  color: var(--quiet);
+  font-size: 0.8rem;
+}
+
+.lane.out .lane-head b {
+  color: var(--quiet);
+  font-weight: 500;
+}
+
+.cells {
+  display: grid;
+  grid-template-columns: repeat(40, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.cell {
+  display: block;
+  height: 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+.cell.measured {
+  border-color: transparent;
+  background: var(--sp-pass);
+}
+
+.lane.out .cell.measured {
+  background: var(--quiet);
+  opacity: 0.6;
+}
+
+.cell.dropped,
+.lane.out .cell.dropped {
+  border-color: transparent;
+  background: var(--sp-fail);
+}
+
+.code {
+  margin: 0.5rem 0 0;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--panel);
+  font: 0.875rem/1.5 ui-monospace, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

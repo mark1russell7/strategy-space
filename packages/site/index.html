@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>strategy-space</title>
-<meta name="description" content="Layout strategies as data: operators, combinators, the count of a space, screening and racing.">
+<meta name="description" content="The strategies of an engine as data: count a space, make a grid or a seeded sample, give one id to each point, and race the strategies.">
 <script>
   // The theme before the first paint: the choice of the visitor, else the theme of the system.
   try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch {}
@@ -16,6 +16,7 @@
 <header class="top">
   <a class="brand" href="./">strategy-space</a>
   <nav aria-label="Site">
+    <a href="#demos">Demos</a>
     <a href="./releases/">Releases</a>
     <a href="./status/">Status</a>
     <a href="https://github.com/mark1russell7/strategy-space">GitHub</a>
@@ -24,15 +25,101 @@
 </header>
 
 <main>
-  <h1>strategy-space</h1>
-  <p class="lead">Layout strategies as data: operators, combinators, the count of a space, screening and racing.</p>
+  <h1>Count, sample and race the strategies of an engine</h1>
+  <p class="lead">A packer or a router is a pipeline of stages, and each stage has options with params. <code>@mark1russell7/strategy-space</code> gives these stages as data. Then its functions count the space, make a grid or a seeded sample, give one id to each point and race the strategies. Each demo on this page uses the real functions of the package in your browser.</p>
 
-  <h2>Install</h2>
+  <ul class="doors" id="demos">
+    <li><a href="#space-title"><b>Count.</b> The configs of a space, stage by stage.</a></li>
+    <li><a href="#configs-title"><b>Sample.</b> A grid, or a sample from a seed.</a></li>
+    <li><a href="#id-title"><b>Id.</b> One id for each point of the space.</a></li>
+    <li><a href="#race-title"><b>Race.</b> Fewer measures than a full screen.</a></li>
+  </ul>
+
   <div class="command">
     <code id="install">pnpm add @mark1russell7/strategy-space</code>
     <button id="copy" type="button">Copy</button>
   </div>
-  <p class="note">This package has no release on npm yet. <a href="./releases/">Releases</a> shows each version, and <a href="./status/">Status</a> shows the open work.</p>
+
+  <section class="sp-demo" aria-labelledby="space-title">
+    <h2 id="space-title">1. Count a space</h2>
+    <p>The space below is a packer with three stages. The stage <code>local-search</code> is optional. A constraint keeps out each config with the <code>input</code> order and no local search. Change the JSON: <code>checkSpace</code> examines it, and <code>spaceSize</code> counts its configs.</p>
+    <div class="sp-examples" id="space-chips"></div>
+    <label class="sp-field"><span><b>The space</b>, as JSON</span><textarea id="space-json" rows="16" spellcheck="false"></textarea></label>
+    <label class="sp-field levels"><span><b>Levels</b> of each number param: <output id="space-levels-value" for="space-levels">2</output></span><input id="space-levels" type="range" min="1" max="6" value="2"></label>
+    <div id="space-result" aria-live="polite"></div>
+    <div class="stages" id="space-stages"></div>
+    <p class="sum" id="space-sum"></p>
+    <dl class="facts" id="space-terms"></dl>
+  </section>
+
+  <section class="sp-demo" aria-labelledby="configs-title">
+    <h2 id="configs-title">2. Make a grid or a sample</h2>
+    <p><code>enumerateSpace</code> makes the configs of the space of demo 1. A grid gives each point at the levels. A sample draws <code>n</code> configs from a seed, and the same seed gives the same configs each time.</p>
+    <div class="sp-choices" id="configs-mode" role="radiogroup" aria-label="The mode"></div>
+    <div class="settings">
+      <label class="sp-field" data-mode="grid"><span><b>Levels</b></span><input id="configs-levels" type="number" min="1" max="12" value="2"></label>
+      <label class="sp-field" data-mode="sample"><span><b>Count</b> <code>n</code></span><input id="configs-n" type="number" min="1" max="50" value="8"></label>
+      <label class="sp-field" data-mode="sample"><span><b>Seed</b></span><input id="configs-seed" type="number" min="0" max="4294967295" value="7"></label>
+      <label class="sp-field" data-mode="sample"><span><b>Draw</b></span><select id="configs-draw"><option value="reject">reject</option><option value="walk">walk</option></select></label>
+    </div>
+    <div id="configs-result" aria-live="polite"></div>
+    <div class="scroll"><table class="configs"><thead id="configs-head"></thead><tbody id="configs-rows"></tbody></table></div>
+    <h3>The share of each option in a sample</h3>
+    <p>With <code>reject</code>, a draw that breaks a constraint draws again. With <code>walk</code>, each stage draws only from the options that keep the constraints, from the largest stage down.</p>
+    <label class="sp-field share-stage"><span><b>Stage</b></span><select id="share-stage"></select></label>
+    <div class="shares" id="share-bars" role="img" aria-labelledby="share-note"></div>
+    <div id="share-note"></div>
+  </section>
+
+  <section class="sp-demo" aria-labelledby="id-title">
+    <h2 id="id-title">3. One id for each point</h2>
+    <p><code>configId</code> gives the first 16 hex characters of the SHA-256 of the canonical form of a config. The order of the keys, a default value and an unused stage do not change the id.</p>
+    <div class="sp-examples" id="id-chips"></div>
+    <div class="sp-pair">
+      <label class="sp-field"><span><b>Config A</b></span><textarea id="id-a" rows="8" spellcheck="false"></textarea></label>
+      <label class="sp-field"><span><b>Config B</b></span><textarea id="id-b" rows="8" spellcheck="false"></textarea></label>
+    </div>
+    <div id="id-result" aria-live="polite"></div>
+    <div class="sp-cards two" id="id-cards"></div>
+    <h3>Add a stage to the space</h3>
+    <p>A space grows: an engine gets a new optional stage. Without <code>omitUnused</code>, the canonical form of each old config gets the new stage as <code>null</code>, so each old id changes.</p>
+    <div class="checks">
+      <label class="check"><input id="grow-omit" type="checkbox"> <span>The new stage <code>rotate</code> has <code>omitUnused: true</code></span></label>
+    </div>
+    <div id="grow-result" aria-live="polite"></div>
+  </section>
+
+  <section class="sp-demo" aria-labelledby="race-title">
+    <h2 id="race-title">4. Race the strategies</h2>
+    <p>A full screen measures each strategy on each input. <code>race</code> measures the live strategies one input at a time. After the first inputs, a paired sign-flip test with the Holm correction drops each strategy that is worse than the best.</p>
+    <p>The costs come from a seeded model: the waste of area in percent. Each input has its own difficulty, and each strategy adds its gap and a noise.</p>
+    <div class="settings">
+      <label class="sp-field"><span><b>Noise</b>: <output id="race-noise-value" for="race-noise">1.5</output> points</span><input id="race-noise" type="range" min="0.25" max="4" step="0.25" value="1.5"></label>
+      <label class="sp-field"><span><b>First test</b> after <output id="race-first-value" for="race-first">5</output> inputs</span><input id="race-first" type="range" min="3" max="12" value="5"></label>
+      <label class="sp-field"><span><b>Level</b></span><select id="race-level"><option value="0.01">0.01</option><option value="0.05" selected>0.05</option><option value="0.1">0.1</option><option value="0.2">0.2</option></select></label>
+      <label class="sp-field"><span><b>Seed</b></span><input id="race-seed" type="number" min="0" max="4294967295" value="1"></label>
+    </div>
+    <div class="checks">
+      <label class="check"><input id="race-screen" type="checkbox"> <span>Keep each strategy: a full screen</span></label>
+    </div>
+    <div id="race-result" aria-live="polite"></div>
+    <ul class="legend" aria-hidden="true">
+      <li><span class="cell measured"></span> a measured cost</li>
+      <li><span class="cell dropped"></span> the input of the drop</li>
+      <li><span class="cell"></span> not measured</li>
+    </ul>
+    <ol class="lanes" id="race-lanes"></ol>
+  </section>
+
+  <h2>Use it</h2>
+  <pre class="code"><code>import { checkSpace, configId, enumerateSpace, race, spaceSize } from "@mark1russell7/strategy-space";
+
+checkSpace(space); // [] when the space is good
+spaceSize(space, { levels: 2 }).base; // 243n for the packer of demo 1
+const sample = enumerateSpace(space, { mode: "sample", n: 8, seed: 7 });
+const ids = sample.map((config) =&gt; configId(space, config));
+const { best, live } = race(ids, (id, input) =&gt; cost(id, input), { inputs: 40 });</code></pre>
+  <p class="note">The package <code>@mark1russell7/strategy-search</code> in the same repository searches a space: sweeps, a genetic search and Pareto fronts. <a href="./releases/">Releases</a> shows each version, and <a href="./status/">Status</a> shows the open work.</p>
 </main>
 
 <script type="module" src="./src/index.ts"></script>
