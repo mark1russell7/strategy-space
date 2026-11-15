@@ -11,3 +11,4 @@ This file is the plan of strategy-space. The Status page of the site reads it, a
 | R5 | The distinctness gate | in progress | A variant counts only when its output differs from each operator of its stage on one input. It came from `highways` with 0.0.1. |
 | R6 | Screening and racing | done in 0.0.3 | `race` measures the live terms on one input at a time. A term drops when the paired sign-flip test with the Holm correction shows it is worse than the best. With `keep` equal to the count of the terms, the race is a screen. |
 | R7 | The surrogate | open | A regression from `rigor-statistics` picks the next runs. This package only uses it. |
+| R8 | The search package | in progress | `@mark1russell7/strategy-search` 0.0.1: a sweep over a grid or a seeded sample, hard constraints, many objectives, Pareto ranks, and one plain row for each evaluation. Genetic search and soft constraints come later. |

@@ -1,0 +1,129 @@
+# The public API of @mark1russell7/strategy-search
+#
+# The names of each entry of the exports field, and the declaration of each name, without comments
+# and private members. The command `api-report check` compares this file with the built .d.ts files.
+# To accept a change of the API, start the build, then `api-report update`, and review the diff.
+
+## . (build/index.d.ts): names
+
+type EvaluationRow: build/sweep.d.ts#EvaluationRow
+type FrontEntry: build/sweep.d.ts#FrontEntry
+GOALS: build/pareto.d.ts#GOALS
+type Goal: build/pareto.d.ts#Goal
+type Measure: build/sweep.d.ts#Measure
+type Objective: build/sweep.d.ts#Objective
+type RowStatus: build/sweep.d.ts#RowStatus
+STRATEGY_SEARCH_SCHEMA: build/sweep.d.ts#STRATEGY_SEARCH_SCHEMA
+type SweepCounts: build/sweep.d.ts#SweepCounts
+type SweepOptions: build/sweep.d.ts#SweepOptions
+type SweepRun: build/sweep.d.ts#SweepRun
+type SweepSample: build/sweep.d.ts#SweepSample
+dominates: build/pareto.d.ts#dominates
+frontOf: build/sweep.d.ts#frontOf
+isRead: build/pareto.d.ts#isRead
+objectiveProblems: build/sweep.d.ts#objectiveProblems
+paretoRanks: build/pareto.d.ts#paretoRanks
+sweep: build/sweep.d.ts#sweep
+
+## Declarations
+
+### build/pareto.d.ts#GOALS
+export declare const GOALS: readonly Goal[];
+
+### build/pareto.d.ts#Goal
+export type Goal = "min" | "max";
+
+### build/pareto.d.ts#dominates
+export declare function dominates(a: readonly number[], b: readonly number[], goals: readonly Goal[]): boolean;
+
+### build/pareto.d.ts#isRead
+export declare const isRead: (point: readonly number[]) => boolean;
+
+### build/pareto.d.ts#paretoRanks
+export declare function paretoRanks(points: readonly (readonly number[])[], goals: readonly Goal[]): (number | null)[];
+
+### build/sweep.d.ts#EvaluationRow
+export interface EvaluationRow {
+  readonly run: string;
+  readonly index: number;
+  readonly config: string;
+  readonly seed: number | null;
+  readonly status: RowStatus;
+  readonly breaks: readonly string[];
+  readonly missing: readonly string[];
+  readonly values: Readonly<Record<string, number | null>>;
+  readonly rank: number | null;
+  readonly front: boolean;
+}
+
+### build/sweep.d.ts#FrontEntry
+export interface FrontEntry {
+  readonly row: EvaluationRow;
+  readonly config: StrategyConfig;
+}
+
+### build/sweep.d.ts#Measure
+export interface Measure {
+  readonly breaks: readonly string[];
+  readonly values: Readonly<Record<string, number>>;
+}
+
+### build/sweep.d.ts#Objective
+export interface Objective {
+  readonly name: string;
+  readonly goal: Goal;
+  readonly unit?: string;
+}
+
+### build/sweep.d.ts#RowStatus
+export type RowStatus = "feasible" | "breaks" | "unread";
+
+### build/sweep.d.ts#STRATEGY_SEARCH_SCHEMA
+export declare const STRATEGY_SEARCH_SCHEMA = "strategy-search/1";
+
+### build/sweep.d.ts#SweepCounts
+export interface SweepCounts {
+  readonly feasible: number;
+  readonly breaks: number;
+  readonly unread: number;
+  readonly front: number;
+}
+
+### build/sweep.d.ts#SweepOptions
+export interface SweepOptions {
+  readonly objectives: readonly Objective[];
+  readonly evaluate: (config: StrategyConfig) => Measure;
+  readonly enumerate: GridOptions | SweepSample;
+  readonly evaluator?: string;
+}
+
+### build/sweep.d.ts#SweepRun
+export interface SweepRun {
+  readonly schema: typeof STRATEGY_SEARCH_SCHEMA;
+  readonly run: string;
+  readonly engine: string;
+  readonly version: string;
+  readonly method: "grid" | "sample";
+  readonly seed: number | null;
+  readonly objectives: readonly Objective[];
+  readonly evaluator: string | null;
+  readonly draws: number;
+  readonly repeats: number;
+  readonly counts: SweepCounts;
+  readonly rows: readonly EvaluationRow[];
+  readonly configs: Readonly<Record<string, StrategyConfig>>;
+}
+
+### build/sweep.d.ts#SweepSample
+export type SweepSample = Omit<SampleOptions, "seed"> & {
+  readonly seed: number | string;
+};
+
+### build/sweep.d.ts#frontOf
+export declare function frontOf(run: SweepRun): FrontEntry[];
+
+### build/sweep.d.ts#objectiveProblems
+export declare function objectiveProblems(objectives: readonly Objective[]): string[];
+
+### build/sweep.d.ts#sweep
+export declare function sweep(space: StrategySpace, options: SweepOptions): SweepRun;

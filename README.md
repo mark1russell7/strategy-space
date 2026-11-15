@@ -5,6 +5,7 @@ Layout strategies as data. A strategy space gives the stages of an engine, the o
 | Package | What it has |
 | --- | --- |
 | [`@mark1russell7/strategy-space`](packages/strategy-space) | The schema `strategy-space/1`, its checks, the id of a config, and the count, grids and seeded samples of a space. Also the option schemas of a strategy, the distinctness gate, the operators, the combinators and the race of the terms. |
+| [`@mark1russell7/strategy-search`](packages/strategy-search) | The search over a space: sweeps with a seed, hard constraints, many objectives, Pareto ranks, and one plain row for each evaluation. |
 
 [`docs/STRATEGY-SPACE.md`](docs/STRATEGY-SPACE.md) tells the schema and the rules. [`docs/ROADMAP.md`](docs/ROADMAP.md) has the plan.
 

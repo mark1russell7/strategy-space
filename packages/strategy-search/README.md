@@ -1,0 +1,66 @@
+# @mark1russell7/strategy-search
+
+A search over a strategy space of [`@mark1russell7/strategy-space`](../strategy-space). A sweep evaluates each config of a grid or of a seeded sample. It gives one plain row for each evaluation, with the Pareto rank of the row. The package knows no domain: you give the evaluation as a function.
+
+## Install
+
+```sh
+npm install @mark1russell7/strategy-search
+```
+
+## A sweep
+
+```ts
+import { frontOf, sweep } from "@mark1russell7/strategy-search";
+
+const run = sweep(space, {
+  objectives: [
+    { name: "cost", goal: "min", unit: "USD" },
+    { name: "speed", goal: "max" },
+  ],
+  evaluate: (config) => ({ breaks: [], values: { cost: costOf(config), speed: speedOf(config) } }),
+  enumerate: { mode: "sample", n: 200, seed: "my study" },
+  evaluator: "my-evaluator 1",
+});
+
+run.rows.filter((row) => row.front); // the rows of the Pareto front
+frontOf(run); // the same rows, each with its config
+```
+
+- `enumerate` takes the options of `enumerateSpace`: a grid, or a sample with a seed. A seed can be a name. `seedOf` of `@mark1russell7/rigor-generators` gives its number.
+- `evaluate` gives the hard constraints that a config breaks, and the value of each objective. It is a pure function.
+- `evaluator` names the evaluation and its version. It is part of the id of the run.
+
+## The rows
+
+Each evaluation gives one row. A row is plain data, so a store can keep it and a query can read it.
+
+| Field | Value |
+| --- | --- |
+| `run` | The id of the run: a hash of the space, the enumeration, the objectives and the evaluator |
+| `index` | The place of the config in the enumeration, from 0 |
+| `config` | The id of the config, from `configId` |
+| `seed` | The seed of the run, or `null` for a grid |
+| `status` | `feasible`, `breaks` or `unread` |
+| `breaks` | The hard constraints that the config breaks |
+| `missing` | The objectives without a finite value |
+| `values` | The value of each objective, or `null` |
+| `rank` | The Pareto rank among the feasible rows, from 1, or `null` |
+| `front` | `true` for the rank 1 |
+
+A sample can give a config two times. The second time gets no evaluation and no row. The field `repeats` of the run counts them.
+
+## The rules of dominance
+
+1. A point dominates a point when it is as good on each objective, and better on one or more objectives.
+2. Two points with equal values do not dominate each other. They get the same rank. The value `-0` equals `0`.
+3. A value that is not a finite number (`NaN`, `Infinity` or `-Infinity`) is not a read. Its row has the status `unread` and no rank. It does not dominate, and no row dominates it.
+4. The rank is 1 when no feasible row dominates the row. The rank is `k + 1` when only rows of rank `k` or less dominate it.
+
+A row that breaks a hard constraint gets no rank. A break comes before a value that is not a read.
+
+`dominates` and `paretoRanks` give the same rules for plain lists of numbers.
+
+## The cost
+
+`paretoRanks` sorts the points in the lexical order of their values. A point can come only after a point that dominates it. Thus each point is compared only with the points of the current rank.
