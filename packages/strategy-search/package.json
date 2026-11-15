@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@mark1russell7/strategy-search",
+  "version": "0.0.1",
+  "description": "A search over a strategy space: sweeps with a seed, hard constraints, many objectives, Pareto fronts, and one plain row for each evaluation.",
+  "keywords": [
+    "strategy-space",
+    "search",
+    "sweep",
+    "pareto-front",
+    "multi-objective",
+    "optimization",
+    "deterministic"
+  ],
+  "homepage": "https://github.com/mark1russell7/strategy-space/tree/main/packages/strategy-search#readme",
+  "bugs": {
+    "url": "https://github.com/mark1russell7/strategy-space/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mark1russell7/strategy-space.git",
+    "directory": "packages/strategy-search"
+  },
+  "license": "MIT",
+  "author": "Mark Russell (https://github.com/mark1russell7)",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "files": [
+    "build"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "main": "./build/index.js",
+    "types": "./build/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./build/index.d.ts",
+        "import": "./build/index.js",
+        "default": "./build/index.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
+  },
+  "dependencies": {
+    "@mark1russell7/rigor-generators": "^0.1.16",
+    "@mark1russell7/strategy-space": "workspace:*"
+  },
+  "devDependencies": {
+    "@mark1russell7/cue": "^2.0.0",
+    "@types/node": "^26.6.5",
+    "@vitest/coverage-v8": "^5.0.3",
+    "esbuild": "^0.28.2",
+    "tsdown": "^0.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
