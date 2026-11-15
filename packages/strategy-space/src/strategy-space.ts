@@ -1,7 +1,7 @@
 // The strategy space of an engine (`docs/STRATEGY-SPACE.md`): its stages, their options and the ranges of their params, as data.
 import { canonicalJson, fnv1a32, mulberry32, randomOf, sha256Hex } from "@mark1russell7/rigor-generators";
 import type { ClaimBreak } from "./claim.ts";
-import { holds, stratumChoice, walkPlan, walkPoint } from "./space-walk.ts";
+import { holds, walkPlan, walkPoint } from "./space-walk.ts";
 
 /** The schema of a strategy space. */
 export const STRATEGY_SPACE_SCHEMA = "strategy-space/1";
@@ -1113,7 +1113,7 @@ function sampleConfigs(
     const list: (StageOption | null)[] = s.options.filter((o) => meta || o.members === undefined);
     if (s.optional) list.push(null);
     if (list.length === 0 && bounded.has(prefix.get(s.name)!)) list.push(null);
-    if (list.length === 0) throw new RangeError(`The stage ${s.name} of the space ${space.engine} has no option for a sample. A shape filter can remove all of its options.`);
+    if (list.length === 0) throw new Error(`The stage ${s.name} of the space ${space.engine} has no option for a sample. A shape filter can remove all of its options.`);
     return list;
   });
   // A meta option without a member list stays in its list, so the strata of 0.2.16 do not change. A point that chooses it draws again.
@@ -1128,13 +1128,12 @@ function sampleConfigs(
   let tries = 0;
   for (let round = 0; points.length < n; round++) {
     const r = stepRandom(seed, `options:${round}`);
-    // The strata of each stage come first. A choice inside a stratum with 2 or more choices takes a draw after them, so the strata stay as in 0.0.7.
-    const picks = lists.map(() => permutation(n, r));
-    const columns = walk ? [] : picks.map((column, k) => column.map((p) => lists[k]![stratumChoice(p, lists[k]!.length, n, r)]!));
+    const picks = walk ? lists.map(() => permutation(n, r)) : [];
+    const columns = walk ? [] : lists.map((list) => permutation(n, r).map((p) => list[Math.floor((p * list.length) / n)]!));
     for (let i = 0; i < n && points.length < n; i++) {
-      if (tries >= maxTries) throw new RangeError(`The constraints of the space ${space.engine} remove too many points: ${points.length} of ${n} configs after ${tries} tries.${walk ? "" : ' The option draw: "walk" gets a sample of a space with many constraints.'}`);
+      if (tries >= maxTries) throw new Error(`The constraints of the space ${space.engine} remove too many points: ${points.length} of ${n} configs after ${tries} tries.${walk ? "" : ' The option draw: "walk" gets a sample of a space with many constraints.'}`);
       tries++;
-      const choices = plan !== null ? walkPoint(plan, picks, i, r) : new Map<string, StageOption | null>(stages.map((s, k) => [s.name, columns[k]![i]!]));
+      const choices = plan !== null ? walkPoint(plan, picks, i) : new Map<string, StageOption | null>(stages.map((s, k) => [s.name, columns[k]![i]!]));
       const metaPart = new Map<string, string>();
       for (const s of stages) {
         const o = choices.get(s.name);
@@ -1181,7 +1180,7 @@ function sampleConfigs(
       const { min, max } = o.members;
       permutation(users.length, r).forEach((stratum, j) => {
         const count = min + Math.min(max - min, Math.floor(((stratum + r()) / users.length) * (max - min + 1)));
-        if (pool.length < count) throw new RangeError(`The space ${part.engine} has only ${pool.length} distinct base samples, fewer than the ${count} members of ${s.name}.${o.id}.`);
+        if (pool.length < count) throw new Error(`The space ${part.engine} has only ${pool.length} distinct base samples, fewer than the ${count} members of ${s.name}.${o.id}.`);
         const picked = permutation(pool.length, r).slice(0, count);
         members[users[j]!]![k] = picked.map((x) => pool[x]!);
       });
@@ -1202,8 +1201,7 @@ function sampleConfigs(
  *
  * - The mode `grid` gives each grid point without a meta option, in a stable order. Stages, options and values go in the order of the space.
  * - The mode `sample` gives `n` configs of a seeded Latin hypercube. The options of a stage get equal strata, and each active param gets its own strata.
- * - A stage with more options than `n` has 2 or more options in a stratum. A draw selects one of them, so each option can come into a sample.
- * - A sample draws again when a point breaks a constraint. After `maxTries` draws, it throws a `RangeError`. Two sampled configs can be equal.
+ * - A sample draws again when a point breaks a constraint. After `maxTries` draws, it throws an `Error`. Two sampled configs can be equal.
  * - With `draw: "walk"`, each stage draws only from the options that keep the constraints with the stages before it. The largest stage keeps its equal strata.
  * - With `shapes`, only the options that support each kind of the list count. Without `shapes`, the result does not change.
  * - A meta option with a `pool` gives only the entries of its pool. With `shapes`, only the entries whose members support each kind count.

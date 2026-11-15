@@ -1,18 +1,5 @@
-// The option draws of a sample of a strategy space: the choice in a stratum, and the walk draw (`docs/STRATEGY-SPACE.md`). The package root does not export this file.
+// The walk draw of a sample of a strategy space (`docs/STRATEGY-SPACE.md`). The package root does not export this file.
 import type { OptionRef, SpaceConstraint, SpaceStage, StageOption } from "./strategy-space.ts";
-
-/**
- * This function gives the index of a choice for the stratum `p` of `n` equal strata over a list of `len` choices.
- * The stratum `p` has the choices from `floor(p * len / n)` to `floor((p + 1) * len / n)`, without the last one. A stratum always has 1 or more choices.
- *
- * In a stratum with 2 or more choices, one draw of `r` selects the choice. Thus each choice of a stage can come into a sample with fewer configs than choices.
- * A stratum with 1 choice takes no draw. Thus a sample with `len <= n` keeps the strata and the draws of strategy-space 0.0.7.
- */
-export function stratumChoice(p: number, len: number, n: number, r: () => number): number {
-  const lo = Math.floor((p * len) / n);
-  const hi = Math.max(lo + 1, Math.floor(((p + 1) * len) / n));
-  return hi - lo > 1 ? lo + Math.floor(r() * (hi - lo)) : lo;
-}
 
 const refMatches = (ref: OptionRef, choices: ReadonlyMap<string, string | null>): boolean => (choices.get(ref.stage) ?? null) === ref.option;
 
@@ -69,23 +56,15 @@ export function walkPlan(
 /**
  * This function gives the options of one point of a walk. It fixes the largest stage first. Thus that stage keeps its equal strata, and the constraints limit only the smaller stages.
  * The value `picks[k][i]` is the stratum of the stage `k` for the point `i`. A stage with no open option gets `null`, and the caller rejects that point.
- *
- * A stratum with 2 or more open options selects one of them with a draw of `r` (`stratumChoice`).
  * The argument `fits` lets a test give a fault. The default is `fitsWalk`.
  */
-export function walkPoint(
-  plan: WalkPlan,
-  picks: readonly (readonly number[])[],
-  i: number,
-  r: () => number,
-  fits: typeof fitsWalk = fitsWalk,
-): Map<string, StageOption | null> {
+export function walkPoint(plan: WalkPlan, picks: readonly (readonly number[])[], i: number, fits: typeof fitsWalk = fitsWalk): Map<string, StageOption | null> {
   const fixed = new Map<string, string | null>();
   const out = new Map<string, StageOption | null>();
   for (const k of plan.order) {
     const s = plan.stages[k]!;
     const open = plan.lists[k]!.filter((o) => fits(plan.naming[k]!, fixed, s.name, o?.id ?? null));
-    const o = open[stratumChoice(picks[k]![i]!, open.length, plan.n, r)] ?? null;
+    const o = open[Math.floor((picks[k]![i]! * open.length) / plan.n)] ?? null;
     fixed.set(s.name, o?.id ?? null);
     out.set(s.name, o);
   }
