@@ -99,3 +99,38 @@ export function paretoRanks(points: readonly (readonly number[])[], goals: reado
   }
   return ranks;
 }
+
+/**
+ * This function gives the crowding distance of each point of one rank (Deb and others, 2002). For each objective, the
+ * points go in the order of their values. Each of the two ends gets `Infinity`. Each other point gets the gap between its
+ * two neighbours, over the range of the objective. The distance of a point is the sum over the objectives.
+ *
+ * An objective with one value for each point adds nothing. A larger distance tells that a point is more alone on its rank.
+ *
+ * @param points - The values of each point. Each value is a finite number (rule 3).
+ * @returns The crowding distance of each point, in the order of the points
+ * @throws RangeError when the points have different counts of values, or when a value is not a finite number
+ */
+export function crowdingDistances(points: readonly (readonly number[])[]): number[] {
+  const count = points[0]?.length ?? 0;
+  for (const point of points) {
+    if (point.length !== count) throw new RangeError(`A point has ${String(point.length)} values, and the first point has ${String(count)}.`);
+    if (!isRead(point)) throw new RangeError("A point has a value that is not a finite number.");
+  }
+  const distances = points.map(() => 0);
+  for (let k = 0; k < count; k += 1) {
+    const at = (i: number): number => points[i]?.[k] as number;
+    const order = points.map((_, i) => i).sort((a, b) => at(a) - at(b) || a - b);
+    const first = order[0] as number;
+    const last = order[order.length - 1] as number;
+    const range = at(last) - at(first);
+    if (range === 0) continue;
+    distances[first] = Infinity;
+    distances[last] = Infinity;
+    for (let j = 1; j < order.length - 1; j += 1) {
+      const i = order[j] as number;
+      distances[i] = (distances[i] as number) + (at(order[j + 1] as number) - at(order[j - 1] as number)) / range;
+    }
+  }
+  return distances;
+}

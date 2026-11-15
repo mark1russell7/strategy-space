@@ -16,55 +16,18 @@ import {
   type StrategyConfig,
   type StrategySpace,
 } from "@mark1russell7/strategy-space";
-import { GOALS, paretoRanks, type Goal } from "./pareto.ts";
-
-/** The schema of a sweep run. */
-export const STRATEGY_SEARCH_SCHEMA = "strategy-search/1";
-
-/** One objective of a search: its name, its goal, and the unit of its values for a reader. */
-export interface Objective {
-  readonly name: string;
-  readonly goal: Goal;
-  /** The unit of the values, as text for a reader. The search does not read it. */
-  readonly unit?: string;
-}
-
-/**
- * The measure of one config, from the evaluation of the caller. `breaks` names each hard constraint that the config breaks.
- * An empty list tells that the config keeps each hard constraint. `values` gives the value of each objective by its name.
- * The search ignores a value of a name that is not an objective.
- */
-export interface Measure {
-  readonly breaks: readonly string[];
-  readonly values: Readonly<Record<string, number>>;
-}
-
-/** The status of an evaluation: it keeps each hard constraint and has each value, it breaks a constraint, or a value is not a read. */
-export type RowStatus = "feasible" | "breaks" | "unread";
-
-/** One plain row for each evaluation of a sweep. */
-export interface EvaluationRow {
-  /** The id of the run. */
-  readonly run: string;
-  /** The place of the config in the order of the enumeration, from 0. A repeat of a config gets no row. */
-  readonly index: number;
-  /** The id of the config, from `configId`. */
-  readonly config: string;
-  /** The seed of the run, or `null` for a grid. */
-  readonly seed: number | null;
-  /** The status. A break of a hard constraint comes before a value that is not a read. */
-  readonly status: RowStatus;
-  /** The hard constraints that the config breaks. */
-  readonly breaks: readonly string[];
-  /** The objectives without a finite value. */
-  readonly missing: readonly string[];
-  /** The value of each objective, or `null` when the value is not a finite number. */
-  readonly values: Readonly<Record<string, number | null>>;
-  /** The Pareto rank among the feasible rows, from 1. A row that is not feasible has no rank. */
-  readonly rank: number | null;
-  /** This value is `true` when the rank is 1. */
-  readonly front: boolean;
-}
+import {
+  countsOf,
+  measuredOf,
+  objectivesOf,
+  rowsOf,
+  STRATEGY_SEARCH_SCHEMA,
+  type EvaluationRow,
+  type Measure,
+  type Measured,
+  type Objective,
+  type SweepCounts,
+} from "./rows.ts";
 
 /** The options of a sample of a sweep. The seed is a whole number or a name. A name gives the seed of `seedOf`. */
 export type SweepSample = Omit<SampleOptions, "seed"> & { readonly seed: number | string };
@@ -79,14 +42,6 @@ export interface SweepOptions {
   readonly enumerate: GridOptions | SweepSample;
   /** The name and the version of the evaluation. It is part of the id of the run. */
   readonly evaluator?: string;
-}
-
-/** The counts of the rows of a run by their status, and the count of the rows on the front. */
-export interface SweepCounts {
-  readonly feasible: number;
-  readonly breaks: number;
-  readonly unread: number;
-  readonly front: number;
 }
 
 /** The record of a sweep: the identity of the run, one row for each evaluation, and the configs by their ids. */
@@ -114,25 +69,6 @@ export interface SweepRun {
 }
 
 /**
- * This function gives the problems of a list of objectives: an empty list, a name that is empty or not unique, and a bad goal.
- *
- * @param objectives - The objectives of a search
- * @returns The problems, or an empty list for good objectives
- */
-export function objectiveProblems(objectives: readonly Objective[]): string[] {
-  if (!Array.isArray(objectives) || objectives.length === 0) return ["The list of the objectives is empty."];
-  const problems: string[] = [];
-  const seen = new Set<string>();
-  for (const [i, objective] of objectives.entries()) {
-    if (typeof objective?.name !== "string" || objective.name.length === 0) problems.push(`The objective ${String(i)} has no name.`);
-    else if (seen.has(objective.name)) problems.push(`The name ${objective.name} is on two objectives.`);
-    else seen.add(objective.name);
-    if (!GOALS.includes(objective?.goal)) problems.push(`The goal of the objective ${String(i)} is ${String(objective?.goal)}, not min or max.`);
-  }
-  return problems;
-}
-
-/**
  * This function evaluates each config of a grid or of a seeded sample of a space, and gives the record of the run.
  *
  * - The configs come from `enumerateSpace`, so each config keeps the constraints of the space.
@@ -146,9 +82,7 @@ export function objectiveProblems(objectives: readonly Objective[]): string[] {
  * @throws RangeError when the objectives are bad, or when `enumerateSpace` refuses the enumeration
  */
 export function sweep(space: StrategySpace, options: SweepOptions): SweepRun {
-  const problems = objectiveProblems(options.objectives);
-  if (problems.length > 0) throw new RangeError(`The objectives are not good: ${problems.join(" ")}`);
-  const objectives = options.objectives.map((o) => (o.unit === undefined ? { name: o.name, goal: o.goal } : { name: o.name, goal: o.goal, unit: o.unit }));
+  const objectives = objectivesOf(options.objectives);
   const given = options.enumerate;
   const seed = given.mode === "sample" ? seedOf(given.seed) : null;
   const enumerate = given.mode === "sample" ? { ...given, seed: seed as number } : given;
@@ -157,36 +91,15 @@ export function sweep(space: StrategySpace, options: SweepOptions): SweepRun {
 
   const drawn = enumerateSpace(space, enumerate);
   const configs: Record<string, StrategyConfig> = {};
-  const measured: { config: string; status: RowStatus; breaks: string[]; missing: string[]; values: Record<string, number | null> }[] = [];
+  const measured: Measured[] = [];
   for (const config of drawn) {
     const id = configId(space, config);
     if (Object.hasOwn(configs, id)) continue;
     configs[id] = config;
-    const measure = options.evaluate(config);
-    const breaks = [...(measure.breaks ?? [])];
-    const values: Record<string, number | null> = {};
-    const missing: string[] = [];
-    for (const { name } of objectives) {
-      const value = measure.values?.[name];
-      const read = typeof value === "number" && Number.isFinite(value);
-      values[name] = read ? value : null;
-      if (!read) missing.push(name);
-    }
-    const status: RowStatus = breaks.length > 0 ? "breaks" : missing.length > 0 ? "unread" : "feasible";
-    measured.push({ config: id, status, breaks, missing, values });
+    measured.push(measuredOf(id, options.evaluate(config), objectives));
   }
 
-  const feasible = measured.filter((m) => m.status === "feasible");
-  const ranks = paretoRanks(
-    feasible.map((m) => objectives.map(({ name }) => m.values[name] as number)),
-    objectives.map((o) => o.goal),
-  );
-  const rankOf = new Map(feasible.map((m, i) => [m.config, ranks[i] ?? null]));
-  const rows: EvaluationRow[] = measured.map((m, index) => {
-    const rank = rankOf.get(m.config) ?? null;
-    return { run, index, config: m.config, seed, status: m.status, breaks: m.breaks, missing: m.missing, values: m.values, rank, front: rank === 1 };
-  });
-  const count = (status: RowStatus): number => rows.filter((row) => row.status === status).length;
+  const rows = rowsOf(run, seed, measured, objectives);
   return {
     schema: STRATEGY_SEARCH_SCHEMA,
     run,
@@ -198,7 +111,7 @@ export function sweep(space: StrategySpace, options: SweepOptions): SweepRun {
     evaluator,
     draws: drawn.length,
     repeats: drawn.length - rows.length,
-    counts: { feasible: count("feasible"), breaks: count("breaks"), unread: count("unread"), front: rows.filter((row) => row.front).length },
+    counts: countsOf(rows),
     rows,
     configs,
   };
@@ -210,12 +123,18 @@ export interface FrontEntry {
   readonly config: StrategyConfig;
 }
 
+/** The rows and the configs of a run: a sweep or a genetic search. */
+export interface RunRows {
+  readonly rows: readonly EvaluationRow[];
+  readonly configs: Readonly<Record<string, StrategyConfig>>;
+}
+
 /**
- * This function gives the rows of the Pareto front of a run and their configs, in the order of the enumeration.
+ * This function gives the rows of the Pareto front of a run and their configs, in the order of the evaluations.
  *
- * @param run - The record of a sweep
+ * @param run - The record of a sweep or of a genetic search
  * @returns The rows of rank 1 and their configs
  */
-export function frontOf(run: SweepRun): FrontEntry[] {
+export function frontOf(run: RunRows): FrontEntry[] {
   return run.rows.filter((row) => row.front).map((row) => ({ row, config: run.configs[row.config] as StrategyConfig }));
 }

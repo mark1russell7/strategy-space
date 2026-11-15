@@ -31,6 +31,51 @@ frontOf(run); // the same rows, each with its config
 - `evaluate` gives the hard constraints that a config breaks, and the value of each objective. It is a pure function.
 - `evaluator` names the evaluation and its version. It is part of the id of the run.
 
+## A genetic search
+
+```ts
+import { evolve, frontOf } from "@mark1russell7/strategy-search";
+
+const run = evolve(space, {
+  objectives: [
+    { name: "cost", goal: "min", unit: "USD" },
+    { name: "speed", goal: "max" },
+  ],
+  evaluate: (config) => ({ breaks: [], values: { cost: costOf(config), speed: speedOf(config) } }),
+  seed: "my study",
+  evaluations: 500,
+});
+
+frontOf(run); // the rows of the Pareto front, each with its config
+```
+
+`evolve` is NSGA-II (Deb and others, 2002) with the constrained dominance of Deb (2000). Use it when a space is too large for a grid, and a sample finds few good configs.
+
+1. The first population comes from a seeded sample of the space.
+2. A tournament of two picks each parent. The better parent wins.
+3. Two parents mix their stages. Each stage of a child comes from one parent, and the second child gets the other parent.
+4. A child takes the choice of a sampled config at some stages. Thus a new choice keeps the ranges of the params.
+5. A child that breaks a constraint of the space gives way to its parent. Thus each config of a run keeps the constraints.
+6. The best configs of the parents and the children make the next population.
+
+The order of the configs:
+
+1. The configs that keep each hard constraint come first, by their Pareto rank. On one rank, a config with a larger crowding distance comes first.
+2. Then come the configs that break hard constraints, the fewest breaks first.
+3. The configs with a value that is not a read come last.
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `evaluations` | | The most evaluations of the run. A repeat of a config costs no evaluation. |
+| `population` | 40 | The count of the configs of a generation |
+| `mutation` | 1 over the count of the stages | The chance that a child takes a new choice at a stage |
+| `crossover` | 0.9 | The chance that two parents mix their stages |
+| `sample` | | The options of the samples, as in `enumerateSpace`. A space with many constraints needs `{ draw: "walk" }`. |
+
+The run stops when it used each evaluation (`stop: "budget"`), or when 20 generations in a row gave no new config (`stop: "stall"`). A small space stops with `stall` after each config has its row.
+
+The rows of a genetic search have the fields of the rows of a sweep, and the field `generation`. The first population is generation 0. The Pareto rank is over each feasible row of the run, not only over the last population. Thus a sweep and a genetic search with the same count of evaluations compare row for row.
+
 ## The rows
 
 Each evaluation gives one row. A row is plain data, so a store can keep it and a query can read it.
@@ -59,7 +104,7 @@ A sample can give a config two times. The second time gets no evaluation and no 
 
 A row that breaks a hard constraint gets no rank. A break comes before a value that is not a read.
 
-`dominates` and `paretoRanks` give the same rules for plain lists of numbers.
+`dominates` and `paretoRanks` give the same rules for plain lists of numbers. `crowdingDistances` gives the crowding distance of each point of one rank.
 
 ## The cost
 
