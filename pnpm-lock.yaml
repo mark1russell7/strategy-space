@@ -208,9 +208,15 @@ importers:
       '@mark1russell7/cue':
         specifier: ^2.0.0
         version: 2.1.4
+      '@mark1russell7/rigor-generators':
+        specifier: ^0.1.16
+        version: 0.1.16
       '@mark1russell7/site-pages':
         specifier: ^0.4.1
         version: 0.4.8
+      '@mark1russell7/strategy-space':
+        specifier: workspace:*
+        version: link:../strategy-space
       '@types/node':
         specifier: ^26.6.5
         version: 26.6.6
