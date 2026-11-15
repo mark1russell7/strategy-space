@@ -10,7 +10,6 @@
 import { canonicalHash, seedOf } from "@mark1russell7/rigor-generators";
 import {
   configId,
-  enumerateSpace,
   type GridOptions,
   type SampleOptions,
   type StrategyConfig,
@@ -18,6 +17,7 @@ import {
 } from "@mark1russell7/strategy-space";
 import {
   countsOf,
+  drawConfigs,
   measuredOf,
   objectivesOf,
   rowsOf,
@@ -89,7 +89,7 @@ export function sweep(space: StrategySpace, options: SweepOptions): SweepRun {
   const evaluator = options.evaluator ?? null;
   const run = canonicalHash({ schema: STRATEGY_SEARCH_SCHEMA, space: canonicalHash(space), enumerate, objectives, evaluator }).slice(0, 16);
 
-  const drawn = enumerateSpace(space, enumerate);
+  const drawn = drawConfigs(space, enumerate);
   const configs: Record<string, StrategyConfig> = {};
   const measured: Measured[] = [];
   for (const config of drawn) {

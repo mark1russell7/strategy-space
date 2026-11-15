@@ -18,7 +18,6 @@ import {
   canonicalConfig,
   checkConfig,
   configId,
-  enumerateSpace,
   type SampleOptions,
   type StageChoice,
   type StrategyConfig,
@@ -27,6 +26,7 @@ import {
 import { crowdingDistances, paretoRanks, type Goal } from "./pareto.ts";
 import {
   countsOf,
+  drawConfigs,
   measuredOf,
   objectiveProblems,
   objectivesOf,
@@ -223,6 +223,7 @@ function mutate(space: StrategySpace, child: StrategyConfig, donor: StrategyConf
  * This function searches a space with a genetic algorithm, and gives the record of the run.
  *
  * - The first population comes from a seeded sample of the space. The new choices of the children come from more samples.
+ *   Each sample has at least the size of the population, and at least the count of the choices of the widest stage.
  * - Each config of a row keeps the constraints of the space.
  * - A config that the run proposes again gets no second evaluation. The record counts the repeats.
  * - The run stops when it used each evaluation, or when 20 generations in a row made no new config.
@@ -249,10 +250,14 @@ export function evolve(space: StrategySpace, options: EvolveOptions): EvolveRun 
   const run = canonicalHash({ schema: STRATEGY_SEARCH_SCHEMA, space: canonicalHash(space), settings, objectives, evaluator }).slice(0, 16);
 
   const random = mulberry32(deriveSeed(seed, "choices"));
+  // A seeded sample of n configs puts the choices of a stage in n strata. Thus a sample with fewer configs than the choices
+  // of a stage never offers some of its choices, and a sample of 1 config always takes the first choice of each stage.
+  const widest = Math.max(...space.stages.map((stage) => stage.options.length + (stage.optional === true ? 1 : 0)));
+  const drawSize = Math.max(size, widest);
   let batch = 0;
-  const draw = (n: number): StrategyConfig[] => {
+  const draw = (): StrategyConfig[] => {
     batch += 1;
-    return enumerateSpace(space, { ...sample, mode: "sample", n, seed: deriveSeed(seed, `sample-${String(batch)}`) });
+    return drawConfigs(space, { ...sample, mode: "sample", n: drawSize, seed: deriveSeed(seed, `sample-${String(batch)}`) });
   };
   const valid = (config: StrategyConfig): boolean => checkConfig(space, config, sample).length === 0;
 
@@ -283,8 +288,8 @@ export function evolve(space: StrategySpace, options: EvolveOptions): EvolveRun 
   let stall = 0;
   while (population.length < size && members.length < budget && stall < EVOLVE_DEFAULTS.stall) {
     const before = population.length;
-    for (const config of draw(size - population.length)) {
-      if (members.length >= budget) break;
+    for (const config of draw()) {
+      if (population.length >= size || members.length >= budget) break;
       const member = visit(config, 0);
       if (!population.includes(member)) population.push(member);
     }
@@ -297,7 +302,7 @@ export function evolve(space: StrategySpace, options: EvolveOptions): EvolveRun 
     generations += 1;
     const before = members.length;
     const standings = standingsOf(population, goals);
-    const donors = draw(size);
+    const donors = draw();
     const children: Member[] = [];
     for (let k = 0; k < size && members.length < budget; k += 2) {
       const a = pick(population, standings, random);

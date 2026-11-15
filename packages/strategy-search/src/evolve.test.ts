@@ -215,3 +215,60 @@ describe("the parts of the algorithm, over the seeds 1 to 5", () => {
     expect(mean(spans)).toBeGreaterThanOrEqual(14);
   });
 });
+
+describe("the samples of a run", () => {
+  /** A space of one stage with six choices: wider than a population of 2. */
+  const wide: StrategySpace = {
+    schema: STRATEGY_SPACE_SCHEMA,
+    engine: "wide",
+    version: "1",
+    stages: [{ name: "pick", options: ["a", "b", "c", "d", "e", "f"].map((id) => ({ id, params: [] })) }],
+  };
+  const place: Objective[] = [{ name: "place", goal: "max" }];
+  const placeOf = (config: StrategyConfig): Measure => ({ breaks: [], values: { place: "abcdef".indexOf(config.stages["pick"]?.option ?? "") } });
+
+  it("offers each choice of a stage that is wider than the population", () => {
+    for (let seed = 1; seed <= 5; seed += 1) {
+      const run = evolve(wide, { objectives: place, evaluate: placeOf, seed, evaluations: 6, population: 2 });
+      expect(run.rows).toHaveLength(6);
+      expect(run.rows.filter((row) => row.generation === 0)).toHaveLength(2);
+      expect(run.stop).toBe("budget");
+    }
+  });
+
+  // The config with the first choice of each stage breaks the constraint, and a sample of 1 config always takes the first choices.
+  // Three configs keep the constraint, so a sample of 2 or 3 configs often repeats one.
+  const tight: StrategySpace = { ...bits(2), engine: "tight", constraints: [{ if: { stage: "b0", option: "0" }, then: { stage: "b1", option: "1" } }] };
+
+  it("fills the first population when a sample repeats a config, on a space with constraints", () => {
+    for (let seed = 1; seed <= 10; seed += 1) {
+      for (const population of [2, 3]) {
+        const run = evolve(tight, { objectives: ones, evaluate: countOnes, seed, evaluations: 10, population });
+        expect(run.rows).toHaveLength(3);
+        expect(run.stop).toBe("stall");
+        for (const config of Object.values(run.configs)) expect(checkConfig(tight, config)).toEqual([]);
+      }
+    }
+  });
+
+  // Each config breaks a constraint: b1 cannot follow each choice of b0.
+  const closed: StrategySpace = {
+    ...bits(2),
+    engine: "closed",
+    constraints: [
+      { if: { stage: "b0", option: "0" }, then: { stage: "b1", option: "1" } },
+      { if: { stage: "b0", option: "1" }, then: { stage: "b1", option: "0" } },
+      { if: { stage: "b1", option: "1" }, then: { stage: "b0", option: "1" } },
+      { if: { stage: "b1", option: "0" }, then: { stage: "b0", option: "0" } },
+    ],
+  };
+
+  it("gives a RangeError with the text of strategy-space when the constraints remove each config of a sample", () => {
+    const evolving = (): unknown => evolve(closed, { objectives: ones, evaluate: countOnes, seed: 1, evaluations: 10, population: 2, sample: { maxTries: 50 } });
+    expect(evolving).toThrow(RangeError);
+    expect(evolving).toThrow(/remove too many points/);
+    const sweeping = (): unknown => sweep(closed, { objectives: ones, evaluate: countOnes, enumerate: { mode: "sample", n: 4, seed: 1, maxTries: 50 } });
+    expect(sweeping).toThrow(RangeError);
+    expect(sweeping).toThrow(/remove too many points/);
+  });
+});
