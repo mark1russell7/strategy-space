@@ -183,7 +183,7 @@ importers:
         version: 0.3.2
       '@mark1russell7/template-cli':
         specifier: ^0.1.5
-        version: 0.1.7
+        version: 0.1.8
       '@swc/core':
         specifier: ^1.15.0
         version: 1.16.22
@@ -210,10 +210,10 @@ importers:
         version: 2.1.4
       '@mark1russell7/rigor-generators':
         specifier: ^0.1.16
-        version: 0.1.16
+        version: 0.1.18
       '@mark1russell7/site-pages':
-        specifier: ^0.4.12
-        version: 0.4.12
+        specifier: ^0.6.0
+        version: 0.6.0
       '@mark1russell7/strategy-space':
         specifier: workspace:*
         version: link:../strategy-space
@@ -237,7 +237,7 @@ importers:
     dependencies:
       '@mark1russell7/rigor-generators':
         specifier: ^0.1.16
-        version: 0.1.16
+        version: 0.1.18
       '@mark1russell7/strategy-space':
         specifier: workspace:*
         version: link:../strategy-space
@@ -268,10 +268,10 @@ importers:
     dependencies:
       '@mark1russell7/rigor-generators':
         specifier: ^0.1.8
-        version: 0.1.16
+        version: 0.1.18
       '@mark1russell7/rigor-statistics':
         specifier: ^0.2.0
-        version: 0.2.4
+        version: 0.2.8
     devDependencies:
       '@mark1russell7/cue':
         specifier: ^2.0.0
@@ -531,20 +531,20 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@mark1russell7/rigor-generators@0.1.16':
-    resolution: {integrity: sha512-C94Q4C31aZ8UXx1R0JSBV7DiQFl5tVpbFxHxHzHaSqr3dTgmCkEvLrvlUV8/0/GZqPhQYG9cbX6GOlqfRj/h4g==}
-    engines: {node: '>=22'}
-
-  '@mark1russell7/rigor-statistics@0.1.29':
-    resolution: {integrity: sha512-Wh91NJIwxIRN3+a5V2bqUkMhdPcjHI+gVZBCnohf12ZegdSTNqGlpqS2WXYmrRVjasF9EBgm1lC8GQNYpBSg7Q==}
+  '@mark1russell7/rigor-generators@0.1.18':
+    resolution: {integrity: sha512-z5Ia9gDuS/I9pV/4rOoRx3o2DAhW2VE2UYoqIlHo88pmLPX7SWJcympg2N+QS9sSA6Dn0vTPcicxeDX6oXzAGw==}
     engines: {node: '>=22'}
 
   '@mark1russell7/rigor-statistics@0.2.4':
     resolution: {integrity: sha512-0L075rT+toD6edxEwDdZHiFzHP4+dJrI64Pw5gh9V33VwCfNRUMQY90AooDpMgVcC9cuxHNXegDLSOYU9ZMIlA==}
     engines: {node: '>=22'}
 
-  '@mark1russell7/site-pages@0.4.12':
-    resolution: {integrity: sha512-bI0V/chXQuUK6fqpBI2Ew078+wykSi9erPdZMvs73NbmM3MIKwEQO7HLRGucSC9147o9C5MxauKAeiGKV0zsjw==}
+  '@mark1russell7/rigor-statistics@0.2.8':
+    resolution: {integrity: sha512-wPRQe/5351Xr16MIzgHTJyUYeaMh4ScadJ2AHCHZDf5NQdEDD6pG8zhWc0UPKbApTPWU/f7tDqnotSoyWmCqMQ==}
+    engines: {node: '>=22'}
+
+  '@mark1russell7/site-pages@0.6.0':
+    resolution: {integrity: sha512-fj4r31yTJVhuZkTFdfg/n1cQSu+vuUf5eRxWpkUMXp2EsAYpdnbfanCNCC3kPen6C69lNwkkbyUs5YIR7bVFNw==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -553,8 +553,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@mark1russell7/template-cli@0.1.7':
-    resolution: {integrity: sha512-Wy4xa6OgNXyMunSyXOArxmrspLSCuyw1pf1P5X45Uiwe1aWHzn0LJptUYVGUSwT3GTp9FGVDhFMeOnKlapD3Xw==}
+  '@mark1russell7/template-cli@0.1.8':
+    resolution: {integrity: sha512-uGzXp++PCRl+jTwVPZHGm9PkH4jmRx//xbphjE/KP2JA/WyWJ9XTyjRRQvWcVzoUN/hTDnfMNaGBFlT8wdwhUg==}
     engines: {node: '>=22.12'}
     hasBin: true
 
@@ -1825,25 +1825,25 @@ snapshots:
 
   '@mark1russell7/cue@2.1.4': {}
 
-  '@mark1russell7/rigor-generators@0.1.16': {}
-
-  '@mark1russell7/rigor-statistics@0.1.29':
-    dependencies:
-      '@mark1russell7/rigor-generators': 0.1.16
+  '@mark1russell7/rigor-generators@0.1.18': {}
 
   '@mark1russell7/rigor-statistics@0.2.4':
     dependencies:
-      '@mark1russell7/rigor-generators': 0.1.16
+      '@mark1russell7/rigor-generators': 0.1.18
 
-  '@mark1russell7/site-pages@0.4.12':
+  '@mark1russell7/rigor-statistics@0.2.8':
     dependencies:
-      '@mark1russell7/rigor-statistics': 0.1.29
+      '@mark1russell7/rigor-generators': 0.1.18
+
+  '@mark1russell7/site-pages@0.6.0':
+    dependencies:
+      '@mark1russell7/rigor-statistics': 0.2.4
 
   '@mark1russell7/ste-lint@0.3.2':
     dependencies:
       typescript: 6.0.3
 
-  '@mark1russell7/template-cli@0.1.7':
+  '@mark1russell7/template-cli@0.1.8':
     dependencies:
       '@clack/prompts': 1.8.1
 
