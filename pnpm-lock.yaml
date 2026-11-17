@@ -183,7 +183,7 @@ importers:
         version: 0.3.2
       '@mark1russell7/template-cli':
         specifier: ^0.1.5
-        version: 0.1.8
+        version: 0.1.9
       '@swc/core':
         specifier: ^1.15.0
         version: 1.16.22
@@ -209,11 +209,11 @@ importers:
         specifier: ^2.0.0
         version: 2.1.4
       '@mark1russell7/rigor-generators':
-        specifier: ^0.1.16
-        version: 0.1.18
+        specifier: ^0.2.0
+        version: 0.2.0
       '@mark1russell7/site-pages':
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^0.7.0
+        version: 0.7.0
       '@mark1russell7/strategy-space':
         specifier: workspace:*
         version: link:../strategy-space
@@ -236,8 +236,8 @@ importers:
   packages/strategy-search:
     dependencies:
       '@mark1russell7/rigor-generators':
-        specifier: ^0.1.16
-        version: 0.1.18
+        specifier: ^0.2.0
+        version: 0.2.0
       '@mark1russell7/strategy-space':
         specifier: workspace:*
         version: link:../strategy-space
@@ -267,11 +267,11 @@ importers:
   packages/strategy-space:
     dependencies:
       '@mark1russell7/rigor-generators':
-        specifier: ^0.1.8
-        version: 0.1.18
+        specifier: ^0.2.0
+        version: 0.2.0
       '@mark1russell7/rigor-statistics':
         specifier: ^0.2.0
-        version: 0.2.8
+        version: 0.2.10
     devDependencies:
       '@mark1russell7/cue':
         specifier: ^2.0.0
@@ -535,16 +535,20 @@ packages:
     resolution: {integrity: sha512-z5Ia9gDuS/I9pV/4rOoRx3o2DAhW2VE2UYoqIlHo88pmLPX7SWJcympg2N+QS9sSA6Dn0vTPcicxeDX6oXzAGw==}
     engines: {node: '>=22'}
 
-  '@mark1russell7/rigor-statistics@0.2.4':
-    resolution: {integrity: sha512-0L075rT+toD6edxEwDdZHiFzHP4+dJrI64Pw5gh9V33VwCfNRUMQY90AooDpMgVcC9cuxHNXegDLSOYU9ZMIlA==}
+  '@mark1russell7/rigor-generators@0.2.0':
+    resolution: {integrity: sha512-eTyJhK4Nowx1KQ3QrsQqLiAlhFoL+8m1OT6He+X0Lf0G/0f9OyQC8ponQLViQKRkP/ef10B6oACFjtjnKErobg==}
+    engines: {node: '>=22'}
+
+  '@mark1russell7/rigor-statistics@0.2.10':
+    resolution: {integrity: sha512-2YQKwuR9DHh5l98U8G9ADvVpjBfsZ/smMslBuPf4ryYUVSefS+xl06pulhoeH+Ya7s5uUsS7yEovg8h64E3jOw==}
     engines: {node: '>=22'}
 
   '@mark1russell7/rigor-statistics@0.2.8':
     resolution: {integrity: sha512-wPRQe/5351Xr16MIzgHTJyUYeaMh4ScadJ2AHCHZDf5NQdEDD6pG8zhWc0UPKbApTPWU/f7tDqnotSoyWmCqMQ==}
     engines: {node: '>=22'}
 
-  '@mark1russell7/site-pages@0.6.0':
-    resolution: {integrity: sha512-fj4r31yTJVhuZkTFdfg/n1cQSu+vuUf5eRxWpkUMXp2EsAYpdnbfanCNCC3kPen6C69lNwkkbyUs5YIR7bVFNw==}
+  '@mark1russell7/site-pages@0.7.0':
+    resolution: {integrity: sha512-nFiaxs1D/IAxj54KUow0AkU35fxWj6iCHAcQ2GG2ISv0yD+YwnOoDHNmO1mV1g+roRV7G5czJNZlzv+3lcT2vg==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -553,8 +557,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@mark1russell7/template-cli@0.1.8':
-    resolution: {integrity: sha512-uGzXp++PCRl+jTwVPZHGm9PkH4jmRx//xbphjE/KP2JA/WyWJ9XTyjRRQvWcVzoUN/hTDnfMNaGBFlT8wdwhUg==}
+  '@mark1russell7/template-cli@0.1.9':
+    resolution: {integrity: sha512-7ebtLlCmT6KYhbpoI2SZHXCQC6/7Rc660SvKwQvfslseSQrXMRlmBj+1/F5KOCep6aB+LtvGWg+HmTKi6uZjyQ==}
     engines: {node: '>=22.12'}
     hasBin: true
 
@@ -1827,23 +1831,25 @@ snapshots:
 
   '@mark1russell7/rigor-generators@0.1.18': {}
 
-  '@mark1russell7/rigor-statistics@0.2.4':
+  '@mark1russell7/rigor-generators@0.2.0': {}
+
+  '@mark1russell7/rigor-statistics@0.2.10':
     dependencies:
-      '@mark1russell7/rigor-generators': 0.1.18
+      '@mark1russell7/rigor-generators': 0.2.0
 
   '@mark1russell7/rigor-statistics@0.2.8':
     dependencies:
       '@mark1russell7/rigor-generators': 0.1.18
 
-  '@mark1russell7/site-pages@0.6.0':
+  '@mark1russell7/site-pages@0.7.0':
     dependencies:
-      '@mark1russell7/rigor-statistics': 0.2.4
+      '@mark1russell7/rigor-statistics': 0.2.8
 
   '@mark1russell7/ste-lint@0.3.2':
     dependencies:
       typescript: 6.0.3
 
-  '@mark1russell7/template-cli@0.1.8':
+  '@mark1russell7/template-cli@0.1.9':
     dependencies:
       '@clack/prompts': 1.8.1
 
