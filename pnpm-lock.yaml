@@ -179,8 +179,8 @@ importers:
         specifier: ^2.0.0
         version: 2.1.4
       '@mark1russell7/ste-lint':
-        specifier: ^0.3.0
-        version: 0.3.2
+        specifier: ^0.4.0
+        version: 0.4.0
       '@mark1russell7/template-cli':
         specifier: ^0.1.5
         version: 0.1.9
@@ -212,8 +212,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       '@mark1russell7/site-pages':
-        specifier: ^0.7.0
-        version: 0.7.3
+        specifier: ^0.8.0
+        version: 0.8.0
       '@mark1russell7/strategy-space':
         specifier: workspace:*
         version: link:../strategy-space
@@ -271,7 +271,7 @@ importers:
         version: 0.2.0
       '@mark1russell7/rigor-statistics':
         specifier: ^0.2.0
-        version: 0.2.11
+        version: 0.2.14
     devDependencies:
       '@mark1russell7/cue':
         specifier: ^2.0.0
@@ -531,25 +531,29 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@mark1russell7/rigor-generators@0.2.0':
-    resolution: {integrity: sha512-eTyJhK4Nowx1KQ3QrsQqLiAlhFoL+8m1OT6He+X0Lf0G/0f9OyQC8ponQLViQKRkP/ef10B6oACFjtjnKErobg==}
+  '@mark1russell7/files@0.0.4':
+    resolution: {integrity: sha512-Pb978ZnvlAxzcdWtRtqTGb7mZFCvlNrdKnpZqhxQ7gafzeNGf1JqYFuB4RWiLbJzRuFUWjEoAVG5f2TndCIlSg==}
     engines: {node: '>=22'}
 
-  '@mark1russell7/rigor-statistics@0.2.10':
-    resolution: {integrity: sha512-2YQKwuR9DHh5l98U8G9ADvVpjBfsZ/smMslBuPf4ryYUVSefS+xl06pulhoeH+Ya7s5uUsS7yEovg8h64E3jOw==}
+  '@mark1russell7/rigor-generators@0.2.0':
+    resolution: {integrity: sha512-eTyJhK4Nowx1KQ3QrsQqLiAlhFoL+8m1OT6He+X0Lf0G/0f9OyQC8ponQLViQKRkP/ef10B6oACFjtjnKErobg==}
     engines: {node: '>=22'}
 
   '@mark1russell7/rigor-statistics@0.2.11':
     resolution: {integrity: sha512-heKnYcMqfQNyPa0F6chPeO0jMGuPpw9ol62Z1tO7kYXDMOcQxdEGunCkWRh2vEDMtNE5MxhSCElKS8YehGINJg==}
     engines: {node: '>=22'}
 
-  '@mark1russell7/site-pages@0.7.3':
-    resolution: {integrity: sha512-VCh+TkcmwyUbygViLOUutjX+THZmx6r/BmemSbhhE1MmG50PPqtvJG//6DTigoYBkuGnHdTK1OPHVf/0eMUMCA==}
+  '@mark1russell7/rigor-statistics@0.2.14':
+    resolution: {integrity: sha512-qhBNau4VdFfJyCr087izw/wf6CyKQ51YcN05CMEUS2YECuy7711ag0xjIZACwZSC1/zlRpq4plVbMTFZhCj2eQ==}
+    engines: {node: '>=22'}
+
+  '@mark1russell7/site-pages@0.8.0':
+    resolution: {integrity: sha512-OlqsZfj5yNovI1ysfPJEIVsRnON3KgEP9ELMIH5CO+kP9FY5Vu873oCY+Zja5dKB8wTVgU3YewEcTqH9ncDurg==}
     engines: {node: '>=22'}
     hasBin: true
 
-  '@mark1russell7/ste-lint@0.3.2':
-    resolution: {integrity: sha512-0WRNon1oYKX1mmTP/AhrPnpoGAGolmpkJWHaTkHXc4SKe1tQhUvPrY/0TQ4gvu7aN+TEPpypiZDIkOjYZG8qBA==}
+  '@mark1russell7/ste-lint@0.4.0':
+    resolution: {integrity: sha512-V58Mtpt7WOW2wRBreSuuIO4am0WOdrJq8603+NNtqyI5EY0/LpPiQFxEDx+yNOgkN5ddnpPTkjalRTmBF+9GXQ==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -1830,22 +1834,25 @@ snapshots:
 
   '@mark1russell7/cue@2.1.4': {}
 
-  '@mark1russell7/rigor-generators@0.2.0': {}
+  '@mark1russell7/files@0.0.4': {}
 
-  '@mark1russell7/rigor-statistics@0.2.10':
-    dependencies:
-      '@mark1russell7/rigor-generators': 0.2.0
+  '@mark1russell7/rigor-generators@0.2.0': {}
 
   '@mark1russell7/rigor-statistics@0.2.11':
     dependencies:
       '@mark1russell7/rigor-generators': 0.2.0
 
-  '@mark1russell7/site-pages@0.7.3':
+  '@mark1russell7/rigor-statistics@0.2.14':
     dependencies:
-      '@mark1russell7/rigor-statistics': 0.2.10
+      '@mark1russell7/rigor-generators': 0.2.0
 
-  '@mark1russell7/ste-lint@0.3.2':
+  '@mark1russell7/site-pages@0.8.0':
     dependencies:
+      '@mark1russell7/rigor-statistics': 0.2.11
+
+  '@mark1russell7/ste-lint@0.4.0':
+    dependencies:
+      '@mark1russell7/files': 0.0.4
       typescript: 6.0.3
 
   '@mark1russell7/template-cli@0.1.9':
