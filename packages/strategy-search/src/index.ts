@@ -8,6 +8,16 @@ export {
   type EvolveSample,
   type EvolveStop,
 } from "./evolve.ts";
+export {
+  greedy,
+  greedyProblems,
+  type GreedyItem,
+  type GreedyOptions,
+  type GreedyPick,
+  type GreedyRun,
+  type GreedyStop,
+  type Selection,
+} from "./greedy.ts";
 export { crowdingDistances, dominates, GOALS, isRead, paretoRanks, type Goal } from "./pareto.ts";
 export {
   objectiveProblems,

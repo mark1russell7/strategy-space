@@ -16,11 +16,17 @@ type EvolveStop: build/evolve.d.ts#EvolveStop
 type FrontEntry: build/sweep.d.ts#FrontEntry
 GOALS: build/pareto.d.ts#GOALS
 type Goal: build/pareto.d.ts#Goal
+type GreedyItem: build/greedy.d.ts#GreedyItem
+type GreedyOptions: build/greedy.d.ts#GreedyOptions
+type GreedyPick: build/greedy.d.ts#GreedyPick
+type GreedyRun: build/greedy.d.ts#GreedyRun
+type GreedyStop: build/greedy.d.ts#GreedyStop
 type Measure: build/rows.d.ts#Measure
 type Objective: build/rows.d.ts#Objective
 type RowStatus: build/rows.d.ts#RowStatus
 type RunRows: build/sweep.d.ts#RunRows
 STRATEGY_SEARCH_SCHEMA: build/rows.d.ts#STRATEGY_SEARCH_SCHEMA
+type Selection: build/greedy.d.ts#Selection
 type SweepCounts: build/rows.d.ts#SweepCounts
 type SweepOptions: build/sweep.d.ts#SweepOptions
 type SweepRun: build/sweep.d.ts#SweepRun
@@ -30,6 +36,8 @@ dominates: build/pareto.d.ts#dominates
 evolve: build/evolve.d.ts#evolve
 evolveProblems: build/evolve.d.ts#evolveProblems
 frontOf: build/sweep.d.ts#frontOf
+greedy: build/greedy.d.ts#greedy
+greedyProblems: build/greedy.d.ts#greedyProblems
 isRead: build/pareto.d.ts#isRead
 objectiveProblems: build/rows.d.ts#objectiveProblems
 paretoRanks: build/pareto.d.ts#paretoRanks
@@ -95,6 +103,57 @@ export declare function evolve(space: StrategySpace, options: EvolveOptions): Ev
 
 ### build/evolve.d.ts#evolveProblems
 export declare function evolveProblems(options: EvolveOptions): string[];
+
+### build/greedy.d.ts#GreedyItem
+export interface GreedyItem {
+  readonly id: string;
+  readonly cost: number;
+  readonly max?: number;
+}
+
+### build/greedy.d.ts#GreedyOptions
+export interface GreedyOptions {
+  readonly items: readonly GreedyItem[];
+  readonly budget: number;
+  readonly value: (selection: Selection) => readonly number[];
+  readonly goal?: Goal;
+  readonly start?: Selection;
+  readonly lazy?: boolean;
+  readonly single?: boolean;
+  readonly tolerance?: number;
+}
+
+### build/greedy.d.ts#GreedyPick
+export interface GreedyPick {
+  readonly id: string;
+  readonly cost: number;
+  readonly gain: readonly number[];
+  readonly value: readonly number[];
+}
+
+### build/greedy.d.ts#GreedyRun
+export interface GreedyRun {
+  readonly method: "greedy" | "single";
+  readonly picks: readonly GreedyPick[];
+  readonly selection: Selection;
+  readonly spent: number;
+  readonly before: readonly number[];
+  readonly after: readonly number[];
+  readonly stop: GreedyStop;
+  readonly evaluations: number;
+}
+
+### build/greedy.d.ts#GreedyStop
+export type GreedyStop = "budget" | "units" | "no-gain";
+
+### build/greedy.d.ts#Selection
+export type Selection = Readonly<Record<string, number>>;
+
+### build/greedy.d.ts#greedy
+export declare function greedy(options: GreedyOptions): GreedyRun;
+
+### build/greedy.d.ts#greedyProblems
+export declare function greedyProblems(options: GreedyOptions): string[];
 
 ### build/pareto.d.ts#GOALS
 export declare const GOALS: readonly Goal[];

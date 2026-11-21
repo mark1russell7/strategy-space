@@ -1,6 +1,6 @@
 # @mark1russell7/strategy-search
 
-A search over a strategy space of [`@mark1russell7/strategy-space`](../strategy-space). A sweep evaluates each config of a grid or of a seeded sample. It gives one plain row for each evaluation, with the Pareto rank of the row. The package knows no domain: you give the evaluation as a function.
+A search over a strategy space of [`@mark1russell7/strategy-space`](../strategy-space). A sweep evaluates each config of a grid or of a seeded sample. A greedy choice adds units of items under a budget. It gives one plain row for each evaluation, with the Pareto rank of the row. The package knows no domain: you give the evaluation as a function.
 
 ## Install
 
@@ -76,6 +76,33 @@ The order of the configs:
 The run stops when it used each evaluation (`stop: "budget"`), or when 20 generations in a row gave no new config (`stop: "stall"`). A small space stops with `stall` after each config has its row.
 
 The rows of a genetic search have the fields of the rows of a sweep, and the field `generation`. The first population is generation 0. The Pareto rank is over each feasible row of the run, not only over the last population. Thus a sweep and a genetic search with the same count of evaluations compare row for row.
+
+## A budgeted greedy choice
+
+`greedy` chooses units of items under a budget. Each step adds one unit of the item with the largest gain for each unit of cost. The value of a choice is a list of numbers, and the first number is the most important. Thus a gain on the first number always comes before a gain on the second number.
+
+```ts
+import { greedy } from "@mark1russell7/strategy-search";
+
+const run = greedy({
+  items: [
+    { id: "lamp", cost: 20, max: 2 },
+    { id: "radio", cost: 35 },
+  ],
+  budget: 60,
+  // The value of a choice: the most important number first. The function is pure.
+  value: (selection) => [Math.min(2, selection["lamp"] ?? 0), selection["radio"] ?? 0],
+});
+// run.picks gives the steps in order. run.selection gives the units, and run.after gives the value of the choice.
+```
+
+- `goal: "min"` makes a smaller value a gain, for example a shortfall.
+- `start` gives the units of an earlier choice. Their cost is not in the budget. Use it for a second target after a first target.
+- A step must fit the money left. The steps stop at the first of these: no unit fits (`budget`), each item has its `max` (`units`), or no unit has a gain (`no-gain`).
+- A part of a gain at or below `tolerance * max(1, |value|)` is 0. The default tolerance is `1e-9`.
+- At the end, `greedy` compares the choice with the best single unit. It gives the single unit when that unit has a better value (`method: "single"`). Set `single` to `false` to stop this.
+
+The lazy evaluation keeps the last gain of each item as a bound. It evaluates an item again only when its bound is the largest. This is correct when the gain of an item does not increase as the choice grows. With such gains, the result holds at least `(1 - 1/e) / 2` of the best value (Khuller, Moss and Naor 1999). When two items give more together than apart, set `lazy` to `false`. Then each step evaluates each item again.
 
 ## The rows
 

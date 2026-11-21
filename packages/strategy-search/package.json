@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "@mark1russell7/strategy-search",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A search over a strategy space: sweeps and a genetic search (NSGA-II) with a seed, hard constraints, many objectives, Pareto fronts, and one plain row for each evaluation.",
   "keywords": [
     "strategy-space",
@@ -12,7 +12,9 @@
     "optimization",
     "deterministic",
     "genetic-algorithm",
-    "nsga-ii"
+    "nsga-ii",
+    "greedy",
+    "knapsack"
   ],
   "homepage": "https://github.com/mark1russell7/strategy-space/tree/main/packages/strategy-search#readme",
   "bugs": {
